@@ -791,7 +791,7 @@
                 document.getElementById('refreshIcon').innerHTML = '<div class="loader"></div>';
                 
                 // Fetch data from GitHub Pages JSON file
-                const response = await fetch('/venturi_data.json');
+                const response = await fetch('/flowsense/venturi_data.json');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
