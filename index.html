@@ -904,5 +904,24 @@
             setInterval(fetchData, 30000);
         };
     </script>
+    <script>
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful');
+            })
+            .catch(err => {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+      }
+    
+      // Check for updates when coming back online
+      window.addEventListener('online', () => {
+        fetchData(); // Your existing fetchData function
+      });
+    </script>
 </body>
 </html>
