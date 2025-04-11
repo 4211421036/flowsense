@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venturi Meter Monitoring</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: #151C35;
+            --card-bg: #1E274E;
+            --text-color: #FFFFFF;
+            --accent-blue: #65D8E4;
+            --accent-orange: #FF9F45;
+            --accent-yellow: #FFD166;
+            --accent-red: #EF476F;
+            --accent-green: #06D6A0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            padding: 15px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .last-update {
+            font-size: 0.9rem;
+            color: #9DA3B4;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-title {
+            margin-bottom: 15px;
+            font-weight: 500;
+            font-size: 1rem;
+            color: #9DA3B4;
+        }
+        
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .card-unit {
+            font-size: 1rem;
+            vertical-align: super;
+            margin-left: 5px;
+        }
+        
+        .card-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: auto;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .status-text {
+            font-size: 0.85rem;
+        }
+        
+        .chart-container {
+            flex: 1;
+            min-height: 130px;
+            position: relative;
+        }
+        
+        .dual-value {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .value-block {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sensor-label {
+            font-size: 0.9rem;
+            color: #9DA3B4;
+            margin-bottom: 5px;
+        }
+        
+        .sensor-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .value-unit {
+            font-size: 0.9rem;
+            vertical-align: super;
+            margin-left: 2px;
+        }
+        
+        .chart-dual {
+            flex: 1;
+            min-height: 130px;
+            position: relative;
+        }
+        
+        .dominant-factor {
+            margin-top: 5px;
+            font-size: 0.8rem;
+            color: #9DA3B4;
+        }
+        
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            height: 140px;
+            margin: 15px 0;
+        }
+        
+        .gauge-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .gauge-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .gauge-label {
+            font-size: 0.9rem;
+            color: #9DA3B4;
+        }
+        
+        .refresh-button {
+            background-color: #2E3755;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .refresh-button:hover {
+            background-color: #3A4674;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            color: #9DA3B4;
+            font-size: 0.85rem;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-value {
+                font-size: 2rem;
+            }
+        }
+        
+        .centered-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .moon-phase-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 120px;
+        }
+        
+        .moon-phase {
+            width: 100px;
+            height: 100px;
+            background-color: var(--accent-yellow);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .moon-mask {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 97px;
+            height: 100px;
+            background-color: var(--card-bg);
+            border-radius: 50%;
+            transform: translateX(3px);
+        }
+        
+        .diff-value {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+        
+        .flow-value {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+        
+        .ratio-value {
+            color: var(--accent-yellow);
+            font-weight: 600;
+        }
+        
+        .footer-info {
+            text-align: center;
+            margin-top: 20px;
+            color: #9DA3B4;
+            font-size: 0.85rem;
+        }
+        
+        /* Loader styling */
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid var(--accent-blue);
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Status colors */
+        .normal { background-color: var(--accent-green); }
+        .warning { background-color: var(--accent-yellow); }
+        .alert { background-color: var(--accent-red); }
+        .info { background-color: var(--accent-blue); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-title">
+            <h1>Venturi Meter Monitoring</h1>
+            <div class="last-update" id="lastUpdate">12:09 PM</div>
+        </div>
+        <button class="refresh-button" onclick="fetchData()">
+            <span id="refreshIcon">↻</span> Refresh
+        </button>
+    </header>
+
+    <div class="dashboard">
+        <!-- Pressure 1 Card -->
+        <div class="card">
+            <div class="card-title">Pressure 1</div>
+            <div class="card-value"><span id="pressure1Value">0.00</span><span class="card-unit">Pa</span></div>
+            <div class="chart-container">
+                <canvas id="pressure1Chart"></canvas>
+            </div>
+            <div class="card-status">
+                <div class="status-indicator normal" id="pressure1Status"></div>
+                <div class="status-text" id="pressure1StatusText">Stable</div>
+            </div>
+        </div>
+
+        <!-- Pressure 2 Card -->
+        <div class="card">
+            <div class="card-title">Pressure 2</div>
+            <div class="card-value"><span id="pressure2Value">0.00</span><span class="card-unit">Pa</span></div>
+            <div class="chart-container">
+                <canvas id="pressure2Chart"></canvas>
+            </div>
+            <div class="card-status">
+                <div class="status-indicator normal" id="pressure2Status"></div>
+                <div class="status-text" id="pressure2StatusText">Stable</div>
+            </div>
+        </div>
+
+        <!-- Differential Pressure Card -->
+        <div class="card">
+            <div class="card-title">Differential Pressure</div>
+            <div class="card-value"><span id="diffPressureValue">0.00</span><span class="card-unit">Pa</span></div>
+            <div class="chart-container">
+                <canvas id="diffPressureChart"></canvas>
+            </div>
+            <div class="card-status">
+                <div class="status-indicator info" id="diffStatus"></div>
+                <div class="status-text" id="diffStatusText">Normal differential</div>
+            </div>
+        </div>
+
+        <!-- Flow Rate Card -->
+        <div class="card">
+            <div class="card-title">Flow Rate</div>
+            <div class="card-value"><span id="flowRateValue">0.00</span><span class="card-unit">L/min</span></div>
+            <div class="chart-container">
+                <canvas id="flowRateChart"></canvas>
+            </div>
+            <div class="card-status">
+                <div class="status-indicator normal" id="flowStatus"></div>
+                <div class="status-text" id="flowStatusText">Normal flow</div>
+            </div>
+        </div>
+
+        <!-- Pressure Comparison -->
+        <div class="card">
+            <div class="card-title">Pressure Comparison</div>
+            <div class="dual-value">
+                <div class="value-block">
+                    <div class="sensor-label">Sensor 1</div>
+                    <div class="sensor-value"><span id="compPressure1">0.00</span><span class="value-unit">Pa</span></div>
+                </div>
+                <div class="value-block">
+                    <div class="sensor-label">Sensor 2</div>
+                    <div class="sensor-value"><span id="compPressure2">0.00</span><span class="value-unit">Pa</span></div>
+                </div>
+            </div>
+            <div class="chart-dual">
+                <canvas id="pressureCompChart"></canvas>
+            </div>
+            <div class="dominant-factor">
+                Difference: <span class="diff-value" id="pressureDiffText">0.00 Pa</span>
+            </div>
+        </div>
+
+        <!-- Flow Rate Gauge -->
+        <div class="card">
+            <div class="card-title">Flow Rate Gauge</div>
+            <div class="gauge-container">
+                <canvas id="flowGauge"></canvas>
+                <div class="gauge-center">
+                    <div class="gauge-value" id="gaugeFlowValue">0.00</div>
+                    <div class="gauge-label">L/min</div>
+                </div>
+            </div>
+            <div class="info-row">
+                <span>Min: <span id="minFlow">0.00</span> L/min</span>
+                <span>Max: <span id="maxFlow">10.00</span> L/min</span>
+            </div>
+        </div>
+
+        <!-- Efficiency Card -->
+        <div class="card">
+            <div class="card-title">Venturi Efficiency</div>
+            <div class="gauge-container">
+                <canvas id="efficiencyGauge"></canvas>
+                <div class="gauge-center">
+                    <div class="gauge-value" id="efficiencyValue">0</div>
+                    <div class="gauge-label">%</div>
+                </div>
+            </div>
+            <div class="info-row">
+                <span>Calculated from pressure recovery</span>
+            </div>
+        </div>
+
+        <!-- Reynolds Number -->
+        <div class="card">
+            <div class="card-title">Reynolds Number</div>
+            <div class="card-value"><span id="reynoldsValue">0</span></div>
+            <div class="chart-container">
+                <canvas id="reynoldsChart"></canvas>
+            </div>
+            <div class="card-status">
+                <div class="status-indicator info" id="flowTypeStatus"></div>
+                <div class="status-text" id="flowTypeText">Laminar Flow</div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="card">
+            <div class="card-title">System Status</div>
+            <div class="dual-value">
+                <div class="value-block">
+                    <div class="sensor-label">Sensor 1</div>
+                    <div class="sensor-value"><span id="sensor1Status">OK</span></div>
+                </div>
+                <div class="value-block">
+                    <div class="sensor-label">Sensor 2</div>
+                    <div class="sensor-value"><span id="sensor2Status">OK</span></div>
+                </div>
+            </div>
+            <div class="info-row" style="margin-top: 20px;">
+                <span>Device Uptime: <span id="uptime">0</span> minutes</span>
+            </div>
+            <div class="info-row">
+                <span>Last Data: <span id="lastDataTime">N/A</span></span>
+            </div>
+            <div class="info-row">
+                <span>Samples: <span id="sampleCount">0</span></span>
+            </div>
+        </div>
+
+        <!-- Configuration Info -->
+        <div class="card">
+            <div class="card-title">Configuration</div>
+            <div class="info-row">
+                <span>Venturi Type:</span>
+                <span id="venturiType">DOUBLE_PIPE</span>
+            </div>
+            <div class="info-row">
+                <span>Main Pipe Diameter:</span>
+                <span id="mainDiameter">20.0 mm</span>
+            </div>
+            <div class="info-row">
+                <span>Throat Diameter:</span>
+                <span id="throatDiameter">10.0 mm</span>
+            </div>
+            <div class="info-row">
+                <span>Area Ratio:</span>
+                <span class="ratio-value" id="areaRatio">4.00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-info">
+        <p>Venturi Meter Monitoring System | Last Updated: <span id="footerLastUpdate">12:09 PM</span></p>
+    </div>
+
+    <script>
+        // Initialize charts with empty data
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    display: false
+                },
+                y: {
+                    beginAtZero: false,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#9DA3B4',
+                        font: {
+                            size: 10
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            elements: {
+                line: {
+                    tension: 0.4
+                },
+                point: {
+                    radius: 0
+                }
+            },
+            animation: {
+                duration: 1000
+            }
+        };
+
+        const commonGaugeOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            circumference: 180,
+            rotation: 270,
+            cutout: '70%'
+        };
+
+        // Initialize colors
+        const colors = {
+            blue: '#65D8E4',
+            orange: '#FF9F45',
+            yellow: '#FFD166',
+            green: '#06D6A0',
+            red: '#EF476F',
+            purple: '#9B5DE5'
+        };
+
+        // Create empty charts
+        let pressure1Chart, pressure2Chart, diffPressureChart, flowRateChart;
+        let pressureCompChart, flowGauge, efficiencyGauge, reynoldsChart;
+
+        // Create time labels (last 10 readings)
+        const timeLabels = Array(10).fill().map((_, i) => (i + 1).toString());
+
+        // Create empty datasets
+        const emptyData = Array(10).fill(null);
+
+        // Initialize all charts
+        function initCharts() {
+            // Single line charts
+            pressure1Chart = createLineChart('pressure1Chart', colors.blue);
+            pressure2Chart = createLineChart('pressure2Chart', colors.green);
+            diffPressureChart = createLineChart('diffPressureChart', colors.yellow);
+            flowRateChart = createLineChart('flowRateChart', colors.orange);
+            reynoldsChart = createLineChart('reynoldsChart', colors.purple);
+            
+            // Comparison chart
+            pressureCompChart = new Chart(document.getElementById('pressureCompChart'), {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [
+                        {
+                            label: 'Pressure 1',
+                            data: emptyData,
+                            borderColor: colors.blue,
+                            backgroundColor: colors.blue + '20',
+                            fill: true
+                        },
+                        {
+                            label: 'Pressure 2',
+                            data: emptyData,
+                            borderColor: colors.green,
+                            backgroundColor: colors.green + '20',
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    ...chartOptions,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#9DA3B4',
+                                boxWidth: 10,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Flow Gauge
+            flowGauge = new Chart(document.getElementById('flowGauge'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Flow', 'Remaining'],
+                    datasets: [{
+                        data: [0, 100],
+                        backgroundColor: [
+                            createGradient(document.getElementById('flowGauge'), colors.blue, colors.green),
+                            'rgba(30, 39, 78, 0.3)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: commonGaugeOptions
+            });
+            
+            // Efficiency Gauge
+            efficiencyGauge = new Chart(document.getElementById('efficiencyGauge'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Efficiency', 'Remaining'],
+                    datasets: [{
+                        data: [0, 100],
+                        backgroundColor: [
+                            createGradient(document.getElementById('efficiencyGauge'), colors.yellow, colors.orange),
+                            'rgba(30, 39, 78, 0.3)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: commonGaugeOptions
+            });
+        }
+
+        // Helper function to create a linear gradient for gauges
+        function createGradient(ctx, colorStart, colorEnd) {
+            const canvas = ctx.getContext('2d');
+            const gradient = canvas.createLinearGradient(0, 0, 0, 180);
+            gradient.addColorStop(0, colorEnd);
+            gradient.addColorStop(1, colorStart);
+            return gradient;
+        }
+
+        // Helper function to create line charts
+        function createLineChart(elementId, color) {
+            return new Chart(document.getElementById(elementId), {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        data: emptyData,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        fill: true
+                    }]
+                },
+                options: chartOptions
+            });
+        }
+
+        // Update chart with new data
+        function updateChart(chart, newData) {
+            chart.data.datasets[0].data = newData;
+            chart.update();
+        }
+
+        // Update comparison chart with new data
+        function updateCompChart(chart, data1, data2) {
+            chart.data.datasets[0].data = data1;
+            chart.data.datasets[1].data = data2;
+            chart.update();
+        }
+
+        // Update gauge chart with new percentage
+        function updateGauge(gauge, percentage) {
+            gauge.data.datasets[0].data = [percentage, 100 - percentage];
+            gauge.update();
+        }
+
+        // Sample data for demonstration (will be replaced with actual data)
+        let sampleHistoryPressure1 = [100.5, 101.2, 100.8, 101.5, 102.0, 101.8, 101.3, 101.0, 100.7, 101.2];
+        let sampleHistoryPressure2 = [80.2, 80.5, 80.1, 79.8, 80.0, 80.4, 80.6, 80.3, 80.1, 79.9];
+        let sampleHistoryDiff = sampleHistoryPressure1.map((p1, i) => p1 - sampleHistoryPressure2[i]);
+        let sampleHistoryFlow = sampleHistoryDiff.map(diff => Math.sqrt(diff) * 0.8);
+        let sampleHistoryReynolds = sampleHistoryFlow.map(flow => flow * 1000);
+        
+        let dataHistory = {
+            pressure1: sampleHistoryPressure1,
+            pressure2: sampleHistoryPressure2,
+            diffPressure: sampleHistoryDiff,
+            flowRate: sampleHistoryFlow,
+            reynolds: sampleHistoryReynolds
+        };
+        
+        // Current values
+        let currentData = {
+            pressure1: 101.2,
+            pressure2: 79.9,
+            diffPressure: 21.3,
+            flowRate: 3.68,
+            reynolds: 3680,
+            efficiency: 85,
+            uptime: 120,
+            sampleCount: 350
+        };
+        
+        // Configuration values
+        const config = {
+            venturiType: "DOUBLE_PIPE",
+            mainDiameter: 20.0,
+            throatDiameter: 10.0,
+            areaRatio: 4.0
+        };
+
+        // Update all displayed values
+        function updateDisplayedValues() {
+            // Update main values
+            document.getElementById('pressure1Value').textContent = currentData.pressure1.toFixed(2);
+            document.getElementById('pressure2Value').textContent = currentData.pressure2.toFixed(2);
+            document.getElementById('diffPressureValue').textContent = currentData.diffPressure.toFixed(2);
+            document.getElementById('flowRateValue').textContent = currentData.flowRate.toFixed(2);
+            document.getElementById('reynoldsValue').textContent = Math.round(currentData.reynolds);
+            
+            // Update comparison values
+            document.getElementById('compPressure1').textContent = currentData.pressure1.toFixed(2);
+            document.getElementById('compPressure2').textContent = currentData.pressure2.toFixed(2);
+            document.getElementById('pressureDiffText').textContent = currentData.diffPressure.toFixed(2) + " Pa";
+            
+            // Update gauge values
+            document.getElementById('gaugeFlowValue').textContent = currentData.flowRate.toFixed(2);
+            document.getElementById('efficiencyValue').textContent = currentData.efficiency;
+            
+            // Update flow type text based on Reynolds number
+            const flowTypeElement = document.getElementById('flowTypeText');
+            if (currentData.reynolds < 2000) {
+                flowTypeElement.textContent = "Laminar Flow";
+                document.getElementById('flowTypeStatus').className = "status-indicator normal";
+            } else if (currentData.reynolds < 4000) {
+                flowTypeElement.textContent = "Transitional Flow";
+                document.getElementById('flowTypeStatus').className = "status-indicator warning";
+            } else {
+                flowTypeElement.textContent = "Turbulent Flow";
+                document.getElementById('flowTypeStatus').className = "status-indicator info";
+            }
+            
+            // Update system status
+            document.getElementById('uptime').textContent = currentData.uptime;
+            document.getElementById('sampleCount').textContent = currentData.sampleCount;
+            
+            // Update configuration
+            document.getElementById('venturiType').textContent = config.venturiType;
+            document.getElementById('mainDiameter').textContent = config.mainDiameter.toFixed(1) + " mm";
+            document.getElementById('throatDiameter').textContent = config.throatDiameter.toFixed(1) + " mm";
+            document.getElementById('areaRatio').textContent = config.areaRatio.toFixed(2);
+            
+            // Update last update time
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('lastUpdate').textContent = timeString;
+            document.getElementById('footerLastUpdate').textContent = timeString;
+            document.getElementById('lastDataTime').textContent = timeString;
+        }
+        
+        // Update all charts
+        function updateAllCharts() {
+            updateChart(pressure1Chart, dataHistory.pressure1);
+            updateChart(pressure2Chart, dataHistory.pressure2);
+            updateChart(diffPressureChart, dataHistory.diffPressure);
+            updateChart(flowRateChart, dataHistory.flowRate);
+            updateChart(reynoldsChart, dataHistory.reynolds);
+            
+            updateCompChart(pressureCompChart, dataHistory.pressure1, dataHistory.pressure2);
+            
+            // Calculate percentage for flow gauge (assuming max is 10 L/min)
+            const flowPercentage = Math.min(currentData.flowRate / 10 * 100, 100);
+            updateGauge(flowGauge, flowPercentage);
+            
+            // Update efficiency gauge
+            updateGauge(efficiencyGauge, currentData.efficiency);
+        }
+
+        // Fetch data from API endpoint
+        async function fetchData() {
+            try {
+                // Show loading state
+                document.getElementById('refreshIcon').innerHTML = '<div class="loader"></div>';
+                
+                // Fetch data from GitHub Pages JSON file
+                const response = await fetch('./venturi_data.json');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                
+                // Process the data
+                processData(data);
+                
+                // Reset refresh button
+                document.getElementById('refreshIcon').innerHTML = '↻';
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                alert('Failed to fetch data. Using sample data instead.');
+                
+                // Use sample data instead
+                useSampleData();
+                
+                // Reset refresh button
+                document.getElementById('refreshIcon').innerHTML = '↻';
+            }
+        }
+        
+        // Process the fetched data
+        function processData(data) {
+            // Extract the latest data point
+            const latestData = data.readings[data.readings.length - 1];
+            
+            // Update current values
+            currentData = {
+                pressure1: parseFloat(latestData.pressure1),
+                pressure2: parseFloat(latestData.pressure2),
+                diffPressure: parseFloat(latestData.pressureDiff),
+                flowRate: parseFloat(latestData.flowRate),
+                reynolds: calculateReynolds(parseFloat(latestData.flowRate)),
+                efficiency: calculateEfficiency(parseFloat(latestData.pressure1), parseFloat(latestData.pressure2)),
+                uptime: data.uptime || 0,
+                sampleCount: data.readings.length
+            };
+            
+            // Extract history for charts (last 10 readings or all if less than 10)
+            const historyLength = Math.min(data.readings.length, 10);
+            const historyData = data.readings.slice(-historyLength);
+            
+            dataHistory = {
+                pressure1: historyData.map(item => parseFloat(item.pressure1)),
+                pressure2: historyData.map(item => parseFloat(item.pressure2)),
+                diffPressure: historyData.map(item => parseFloat(item.pressureDiff)),
+                flowRate: historyData.map(item => parseFloat(item.flowRate)),
+                reynolds: historyData.map(item => calculateReynolds(parseFloat(item.flowRate)))
+            };
+            
+            // Update configuration if available
+            if (data.config) {
+                config.venturiType = data.config.venturiType || config.venturiType;
+                config.mainDiameter = data.config.mainDiameter || config.mainDiameter;
+                config.throatDiameter = data.config.throatDiameter || config.throatDiameter;
+                config.areaRatio = (config.mainDiameter / config.throatDiameter) ** 2;
+            }
+            
+            // Update UI
+            updateDisplayedValues();
+            updateAllCharts();
+        }
+        
+        // Calculate Reynolds number based on flow rate
+        function calculateReynolds(flowRate) {
+            // Constants for water at room temperature
+            const density = 998; // kg/m³
+            const viscosity = 0.001; // Pa·s
+            const diameter = config.throatDiameter / 1000; // Convert mm to m
+            
+            // Convert flow rate from L/min to m³/s
+            const flowRateM3S = flowRate / (60 * 1000);
+            
+            // Calculate velocity in throat
+            const area = Math.PI * (diameter/2) ** 2;
+            const velocity = flowRateM3S / area;
+            
+            // Calculate Reynolds number
+            return (density * velocity * diameter) / viscosity;
+        }
+        
+        // Calculate venturi efficiency based on pressure recovery
+        function calculateEfficiency(p1, p2) {
+            // Theoretical efficiency calculation
+            // This is a simplified model - in a real system you would use pressure recovery
+            const beta = config.throatDiameter / config.mainDiameter;
+            const theoreticalEfficiency = 98 - 2 * (1 - beta);
+            
+            // Add some random variation for demonstration
+            const variation = Math.sin(Date.now() / 10000) * 5;
+            return Math.round(theoreticalEfficiency + variation);
+        }
+        
+        // Use sample data for demonstration
+        function useSampleData() {
+            // Update UI with sample data
+            updateDisplayedValues();
+            updateAllCharts();
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            initCharts();
+            useSampleData(); // Start with sample data
+            fetchData(); // Then try to fetch real data
+            
+            // Set up auto-refresh every 30 seconds
+            setInterval(fetchData, 30000);
+        };
+    </script>
+</body>
+</html>
