@@ -1,5 +1,5 @@
 <!DOCTYPE html>
- <html lang="en">
+ <html xml:lang="en" lang="en">
  <head>
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -537,7 +537,7 @@
  </head>
  <body>
      <nav aria-label="Skip navigation">
-        <a href="#main-content" class="skip-link">Skip to main content</a>
+        <a href="#main-content" class="skip-link" accesskey="s">Skip to main content</a>
     </nav>
 
     <header role="banner">
@@ -545,8 +545,8 @@
         <h1>Venturi Meter Monitoring</h1>
         <div class="last-update" id="lastUpdate" aria-live="polite" aria-atomic="true">12:09 PM</div>
     </div>
-    <button class="refresh-button" onclick="fetchData()" aria-label="Refresh data">
-        <span id="refreshIcon" aria-hidden="true">↻</span> Refresh
+    <button class="refresh-button" onclick="fetchData()" aria-label="Refresh data" accesskey="r">
+        <span role="tooltip" id="refreshIcon" aria-hidden="true">↻</span> Refresh
     </button>
 </header>
 
@@ -565,7 +565,7 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="pressure1Chart" aria-label="Pressure 1 over time chart" role="img">
-                        <p>Graph showing pressure 1 measurements over time</p>
+                        <p role="text">Graph showing pressure 1 measurements over time</p>
                     </canvas>
                 </div>
                 <div class="card-status">
@@ -584,7 +584,7 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="pressure2Chart" aria-label="Pressure 2 over time chart" role="img">
-                        <p>Graph showing pressure 2 measurements over time</p>
+                        <p role="text">Graph showing pressure 2 measurements over time</p>
                     </canvas>
                 </div>
                 <div class="card-status">
@@ -603,7 +603,7 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="diffPressureChart" aria-label="Differential pressure over time chart" role="img">
-                        <p>Graph showing differential pressure measurements over time</p>
+                        <p role="text">Graph showing differential pressure measurements over time</p>
                     </canvas>
                 </div>
                 <div class="card-status">
@@ -622,7 +622,7 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="flowRateChart" aria-label="Flow rate over time chart" role="img">
-                        <p>Graph showing flow rate measurements over time</p>
+                        <p role="text">Graph showing flow rate measurements over time</p>
                     </canvas>
                 </div>
                 <div class="card-status">
@@ -653,7 +653,7 @@
                 </div>
                 <div class="chart-dual">
                     <canvas id="pressureCompChart" aria-label="Pressure comparison chart" role="img">
-                        <p>Graph comparing pressure measurements from both sensors</p>
+                        <p role="text">Graph comparing pressure measurements from both sensors</p>
                     </canvas>
                 </div>
                 <div class="dominant-factor">
@@ -667,7 +667,7 @@
                 <div id="flowGauge-desc" class="visually-hidden">Visual gauge showing current flow rate</div>
                 <div class="gauge-container">
                     <canvas id="flowGauge" aria-label="Flow rate gauge visualization" role="img">
-                        <p>Gauge visualization of current flow rate</p>
+                        <p role="text">Gauge visualization of current flow rate</p>
                     </canvas>
                     <div class="gauge-center">
                         <div class="gauge-value" id="gaugeFlowValue" aria-live="polite" aria-atomic="true">0.00</div>
@@ -686,7 +686,7 @@
                 <div id="efficiency-desc" class="visually-hidden">Efficiency percentage calculated from pressure recovery</div>
                 <div class="gauge-container">
                     <canvas id="efficiencyGauge" aria-label="Venturi efficiency gauge visualization" role="img">
-                        <p>Gauge visualization of venturi efficiency</p>
+                        <p role="text">Gauge visualization of venturi efficiency</p>
                     </canvas>
                     <div class="gauge-center">
                         <div class="gauge-value" id="efficiencyValue" aria-live="polite" aria-atomic="true">0</div>
@@ -707,7 +707,7 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="reynoldsChart" aria-label="Reynolds number over time chart" role="img">
-                        <p>Graph showing Reynolds number measurements over time</p>
+                        <p role="text">Graph showing Reynolds number measurements over time</p>
                     </canvas>
                 </div>
                 <div class="card-status">
@@ -785,7 +785,7 @@
     </div>
 
     <footer role="contentinfo" class="footer-info">
-        <p>Venturi Meter Monitoring System | Last Updated: <span id="footerLastUpdate" aria-live="polite" aria-atomic="true">12:09 PM</span></p>
+        <p role="text">Venturi Meter Monitoring System | Last Updated: <span id="footerLastUpdate" aria-live="polite" aria-atomic="true">12:09 PM</span></p>
     </footer>
  
      <script>
@@ -1289,113 +1289,113 @@ let isMobile = window.innerWidth <= 768; // Mobile detection
         pressure1: {
             title: "Pressure 1 Information",
             content: `
-                <p>This chart shows the pressure readings from Sensor 1 in Pascals (Pa).</p>
-                <p><strong>How to read:</strong></p>
+                <p role="text">This chart shows the pressure readings from Sensor 1 in Pascals (Pa).</p>
+                <p role="text"><strong>How to read:</strong></p>
                 <ul>
                     <li>The Y-axis shows the pressure value</li>
                     <li>The X-axis shows the most recent 10 readings</li>
                     <li>A stable line indicates consistent pressure</li>
                     <li>Fluctuations may indicate system changes or issues</li>
                 </ul>
-                <p><strong>Normal Range:</strong> Typically between 90-110 Pa for this system</p>
+                <p role="text"><strong>Normal Range:</strong> Typically between 90-110 Pa for this system</p>
             `
         },
         pressure2: {
             title: "Pressure 2 Information",
             content: `
-                <p>This chart shows the pressure readings from Sensor 2 in Pascals (Pa).</p>
-                <p><strong>How to read:</strong></p>
+                <p role="text">This chart shows the pressure readings from Sensor 2 in Pascals (Pa).</p>
+                <p role="text"><strong>How to read:</strong></p>
                 <ul>
                     <li>The Y-axis shows the pressure value</li>
                     <li>The X-axis shows the most recent 10 readings</li>
                     <li>This sensor should show lower pressure than Sensor 1</li>
                     <li>Compare with Pressure 1 to see the differential</li>
                 </ul>
-                <p><strong>Normal Range:</strong> Typically between 75-85 Pa for this system</p>
+                <p role="text"><strong>Normal Range:</strong> Typically between 75-85 Pa for this system</p>
             `
         },
         diffPressure: {
             title: "Differential Pressure Information",
             content: `
-                <p>This chart shows the difference between Pressure 1 and Pressure 2.</p>
-                <p><strong>How to read:</strong></p>
+                <p role="text">This chart shows the difference between Pressure 1 and Pressure 2.</p>
+                <p role="text"><strong>How to read:</strong></p>
                 <ul>
                     <li>Calculated as Pressure 1 minus Pressure 2</li>
                     <li>Directly relates to flow rate through the Venturi</li>
                     <li>Larger differences indicate higher flow rates</li>
                     <li>Sudden drops may indicate blockages</li>
                 </ul>
-                <p><strong>Normal Range:</strong> Typically between 15-25 Pa for normal operation</p>
+                <p role="text"><strong>Normal Range:</strong> Typically between 15-25 Pa for normal operation</p>
             `
         },
         flowRate: {
             title: "Flow Rate Information",
             content: `
-                <p>This chart shows the calculated flow rate in liters per minute (L/min).</p>
-                <p><strong>How to read:</strong></p>
+                <p role="text">This chart shows the calculated flow rate in liters per minute (L/min).</p>
+                <p role="text"><strong>How to read:</strong></p>
                 <ul>
                     <li>Calculated from the differential pressure</li>
                     <li>Follows the square root of the pressure difference</li>
                     <li>Higher values indicate more fluid moving through</li>
                     <li>Zero flow shows when system is off</li>
                 </ul>
-                <p><strong>Normal Range:</strong> Typically between 2-5 L/min for normal operation</p>
+                <p role="text"><strong>Normal Range:</strong> Typically between 2-5 L/min for normal operation</p>
             `
         },
         pressureComp: {
             title: "Pressure Comparison Information",
             content: `
-                <p>This chart compares both pressure sensors simultaneously.</p>
-                <p><strong>How to read:</strong></p>
+                <p role="text">This chart compares both pressure sensors simultaneously.</p>
+                <p role="text"><strong>How to read:</strong></p>
                 <ul>
                     <li>Blue line shows Pressure 1 (upstream)</li>
                     <li>Green line shows Pressure 2 (throat)</li>
                     <li>The gap between lines represents differential pressure</li>
                     <li>Both should move somewhat in sync</li>
                 </ul>
-                <p><strong>Note:</strong> Pressure 2 should always be lower than Pressure 1 in a Venturi system.</p>
+                <p role="text"><strong>Note:</strong> Pressure 2 should always be lower than Pressure 1 in a Venturi system.</p>
             `
         },
         flowGauge: {
             title: "Flow Rate Gauge Information",
             content: `
-                <p>This gauge provides a visual representation of the current flow rate.</p>
-                <p><strong>How to read:</strong></p>
+                <p role="text">This gauge provides a visual representation of the current flow rate.</p>
+                <p role="text"><strong>How to read:</strong></p>
                 <ul>
                     <li>The needle position shows current flow rate</li>
                     <li>Green indicates normal operating range</li>
                     <li>Approaching max may indicate high flow conditions</li>
                     <li>Min and max values are shown below</li>
                 </ul>
-                <p><strong>Normal Range:</strong> Typically in the middle range (30-70%) during normal operation</p>
+                <p role="text"><strong>Normal Range:</strong> Typically in the middle range (30-70%) during normal operation</p>
             `
         },
         efficiency: {
             title: "Venturi Efficiency Information",
             content: `
-                <p>This gauge shows the calculated efficiency of the Venturi meter.</p>
-                <p><strong>How to read:</strong></p>
+                <p role="text">This gauge shows the calculated efficiency of the Venturi meter.</p>
+                <p role="text"><strong>How to read:</strong></p>
                 <ul>
                     <li>Percentage of pressure recovered after the throat</li>
                     <li>Higher values indicate better efficiency</li>
                     <li>Efficiency depends on design and flow conditions</li>
                     <li>Below 70% may indicate issues</li>
                 </ul>
-                <p><strong>Normal Range:</strong> Typically 75-95% for well-designed Venturi meters</p>
+                <p role="text"><strong>Normal Range:</strong> Typically 75-95% for well-designed Venturi meters</p>
             `
         },
         reynolds: {
             title: "Reynolds Number Information",
             content: `
-                <p>This chart shows the Reynolds number, indicating flow regime.</p>
-                <p><strong>How to read:</strong></p>
+                <p role="text">This chart shows the Reynolds number, indicating flow regime.</p>
+                <p role="text"><strong>How to read:</strong></p>
                 <ul>
                     <li>Below 2000: Laminar flow (smooth)</li>
                     <li>2000-4000: Transitional flow</li>
                     <li>Above 4000: Turbulent flow</li>
                     <li>Venturi meters work best in turbulent flow</li>
                 </ul>
-                <p><strong>Note:</strong> Calculated using throat diameter and current flow rate.</p>
+                <p role="text"><strong>Note:</strong> Calculated using throat diameter and current flow rate.</p>
             `
         }
     };
