@@ -223,14 +223,16 @@
         @media (min-width: 768px) {
             .modal {
                 top: 50%;
-                left: 50%;
+                bottom: auto;
                 transform: translate(-50%, -50%) scale(0.9);
+                opacity: 0;
                 border-radius: 16px;
                 max-height: 80vh;
             }
             
             .modal.active {
                 transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
             }
             
             .modal-drag-handle {
@@ -337,8 +339,9 @@
         
         .modal {
             position: fixed;
+            bottom: 0;
             left: 50%;
-            transform: translate(-50%, 100%);
+            transform: translateX(-50%) translateY(100%);
             width: 90%;
             max-width: 500px;
             max-height: 70vh;
@@ -350,10 +353,12 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            visibility: hidden;
         }
         
         .modal.active {
-            transform: translate(-50%, 0);
+            transform: translateX(-50%) translateY(0);
+            visibility: visible;
         }
         
         .modal-header {
@@ -362,6 +367,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: grab;
         }
         
         .modal-title {
@@ -413,15 +419,30 @@
             cursor: pointer;
             z-index: 10;
         }
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #000;
+            color: white;
+            padding: 8px;
+            z-index: 100;
+            transition: top 0.3s;
+        }
+        .skip-link:focus {
+            top: 0;
+        }
     </style>
 </head>
 <body>
+    <a href="#main-content" class="skip-link" id="skip-link">Skip to main content</a>
+
     <header role="banner">
         <div class="header-title">
             <h1>Venturi Meter Monitoring</h1>
             <div class="last-update" id="lastUpdate" aria-live="polite">12:09 PM</div>
         </div>
-        <button class="refresh-button" onclick="fetchData()" aria-label="Refresh data">
+        <button class="refresh-button" id="refreshButton" onclick="fetchData()" aria-label="Refresh data">
             <span id="refreshIcon" aria-hidden="true">↻</span> Refresh
         </button>
     </header>
@@ -437,11 +458,15 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="pressure1Chart" aria-label="Pressure 1 over time chart" role="img"></canvas>
+                    <div id="pressure1ChartDescription" class="sr-only">Chart showing pressure 1 readings over time</div>
                 </div>
                 <div class="card-status">
                     <div class="status-indicator normal" id="pressure1Status" aria-hidden="true"></div>
                     <div class="status-text" id="pressure1StatusText" aria-live="polite">Stable</div>
                 </div>
+                <button class="info-button" aria-label="Show more information about Pressure 1" aria-expanded="false" aria-controls="pressure1InfoModal" onclick="showModalInfo('pressure1')">
+                    Info
+                </button>
             </section>
 
             <!-- Pressure 2 Card -->
@@ -453,11 +478,15 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="pressure2Chart" aria-label="Pressure 2 over time chart" role="img"></canvas>
+                    <div id="pressure2ChartDescription" class="sr-only">Chart showing pressure 2 readings over time</div>
                 </div>
                 <div class="card-status">
                     <div class="status-indicator normal" id="pressure2Status" aria-hidden="true"></div>
                     <div class="status-text" id="pressure2StatusText" aria-live="polite">Stable</div>
                 </div>
+                <button class="info-button" aria-label="Show more information about Pressure 2" aria-expanded="false" aria-controls="pressure2InfoModal" onclick="showModalInfo('pressure2')">
+                    Info
+                </button>
             </section>
 
             <!-- Differential Pressure Card -->
@@ -469,11 +498,15 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="diffPressureChart" aria-label="Differential pressure over time chart" role="img"></canvas>
+                    <div id="diffPressureChartDescription" class="sr-only">Chart showing differential pressure readings over time</div>
                 </div>
                 <div class="card-status">
                     <div class="status-indicator info" id="diffStatus" aria-hidden="true"></div>
                     <div class="status-text" id="diffStatusText" aria-live="polite">Normal differential</div>
                 </div>
+                <button class="info-button" aria-label="Show more information about Differential Pressure" aria-expanded="false" aria-controls="diffPressureInfoModal" onclick="showModalInfo('diffPressure')">
+                    Info
+                </button>
             </section>
 
             <!-- Flow Rate Card -->
@@ -485,11 +518,15 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="flowRateChart" aria-label="Flow rate over time chart" role="img"></canvas>
+                    <div id="flowRateChartDescription" class="sr-only">Chart showing flow rate readings over time</div>
                 </div>
                 <div class="card-status">
                     <div class="status-indicator normal" id="flowStatus" aria-hidden="true"></div>
                     <div class="status-text" id="flowStatusText" aria-live="polite">Normal flow</div>
                 </div>
+                <button class="info-button" aria-label="Show more information about Flow Rate" aria-expanded="false" aria-controls="flowRateInfoModal" onclick="showModalInfo('flowRate')">
+                    Info
+                </button>
             </section>
 
             <!-- Pressure Comparison -->
@@ -497,26 +534,30 @@
                 <h2 class="card-title" id="pressureComp-title">Pressure Comparison</h2>
                 <div class="dual-value">
                     <div class="value-block">
-                        <h3 class="sensor-label">Sensor 1</h3>
+                        <h3 class="sensor-label" id="sensor1Label">Sensor 1</h3>
                         <div class="sensor-value">
-                            <span id="compPressure1" aria-live="polite">0.00</span>
+                            <span id="compPressure1" aria-live="polite" aria-labelledby="sensor1Label">0.00</span>
                             <span class="value-unit">Pa</span>
                         </div>
                     </div>
                     <div class="value-block">
-                        <h3 class="sensor-label">Sensor 2</h3>
+                        <h3 class="sensor-label" id="sensor2Label">Sensor 2</h3>
                         <div class="sensor-value">
-                            <span id="compPressure2" aria-live="polite">0.00</span>
+                            <span id="compPressure2" aria-live="polite" aria-labelledby="sensor2Label">0.00</span>
                             <span class="value-unit">Pa</span>
                         </div>
                     </div>
                 </div>
                 <div class="chart-dual">
                     <canvas id="pressureCompChart" aria-label="Pressure comparison chart" role="img"></canvas>
+                    <div id="pressureCompChartDescription" class="sr-only">Chart comparing readings from pressure sensors 1 and 2</div>
                 </div>
                 <div class="dominant-factor">
                     Difference: <span class="diff-value" id="pressureDiffText" aria-live="polite">0.00 Pa</span>
                 </div>
+                <button class="info-button" aria-label="Show more information about Pressure Comparison" aria-expanded="false" aria-controls="pressureCompInfoModal" onclick="showModalInfo('pressureComp')">
+                    Info
+                </button>
             </section>
 
             <!-- Flow Rate Gauge -->
@@ -524,15 +565,19 @@
                 <h2 class="card-title" id="flowGauge-title">Flow Rate Gauge</h2>
                 <div class="gauge-container">
                     <canvas id="flowGauge" aria-label="Flow rate gauge visualization" role="img"></canvas>
+                    <div id="flowGaugeDescription" class="sr-only">Gauge showing current flow rate relative to min and max values</div>
                     <div class="gauge-center">
                         <div class="gauge-value" id="gaugeFlowValue" aria-live="polite">0.00</div>
                         <div class="gauge-label">L/min</div>
                     </div>
                 </div>
                 <div class="info-row">
-                    <span>Min: <span id="minFlow" aria-live="polite">0.00</span> L/min</span>
-                    <span>Max: <span id="maxFlow" aria-live="polite">10.00</span> L/min</span>
+                    <span id="minFlowLabel">Min: <span id="minFlow" aria-live="polite">0.00</span> L/min</span>
+                    <span id="maxFlowLabel">Max: <span id="maxFlow" aria-live="polite">10.00</span> L/min</span>
                 </div>
+                <button class="info-button" aria-label="Show more information about Flow Rate Gauge" aria-expanded="false" aria-controls="flowGaugeInfoModal" onclick="showModalInfo('flowGauge')">
+                    Info
+                </button>
             </section>
 
             <!-- Efficiency Card -->
@@ -540,6 +585,7 @@
                 <h2 class="card-title" id="efficiency-title">Venturi Efficiency</h2>
                 <div class="gauge-container">
                     <canvas id="efficiencyGauge" aria-label="Venturi efficiency gauge visualization" role="img"></canvas>
+                    <div id="efficiencyGaugeDescription" class="sr-only">Gauge showing current Venturi efficiency percentage</div>
                     <div class="gauge-center">
                         <div class="gauge-value" id="efficiencyValue" aria-live="polite">0</div>
                         <div class="gauge-label">%</div>
@@ -548,6 +594,9 @@
                 <div class="info-row">
                     <span>Calculated from pressure recovery</span>
                 </div>
+                <button class="info-button" aria-label="Show more information about Venturi Efficiency" aria-expanded="false" aria-controls="efficiencyInfoModal" onclick="showModalInfo('efficiency')">
+                    Info
+                </button>
             </section>
 
             <!-- Reynolds Number -->
@@ -558,11 +607,15 @@
                 </div>
                 <div class="chart-container">
                     <canvas id="reynoldsChart" aria-label="Reynolds number over time chart" role="img"></canvas>
+                    <div id="reynoldsChartDescription" class="sr-only">Chart showing Reynolds number readings over time</div>
                 </div>
                 <div class="card-status">
                     <div class="status-indicator info" id="flowTypeStatus" aria-hidden="true"></div>
                     <div class="status-text" id="flowTypeText" aria-live="polite">Laminar Flow</div>
                 </div>
+                <button class="info-button" aria-label="Show more information about Reynolds Number" aria-expanded="false" aria-controls="reynoldsInfoModal" onclick="showModalInfo('reynolds')">
+                    Info
+                </button>
             </section>
 
             <!-- System Status -->
@@ -570,61 +623,70 @@
                 <h2 class="card-title" id="systemStatus-title">System Status</h2>
                 <div class="dual-value">
                     <div class="value-block">
-                        <h3 class="sensor-label">Sensor 1</h3>
+                        <h3 class="sensor-label" id="sensor1StatusLabel">Sensor 1</h3>
                         <div class="sensor-value">
-                            <span id="sensor1Status" aria-live="polite">OK</span>
+                            <span id="sensor1Status" aria-live="polite" aria-labelledby="sensor1StatusLabel">OK</span>
                         </div>
                     </div>
                     <div class="value-block">
-                        <h3 class="sensor-label">Sensor 2</h3>
+                        <h3 class="sensor-label" id="sensor2StatusLabel">Sensor 2</h3>
                         <div class="sensor-value">
-                            <span id="sensor2Status" aria-live="polite">OK</span>
+                            <span id="sensor2Status" aria-live="polite" aria-labelledby="sensor2StatusLabel">OK</span>
                         </div>
                     </div>
                 </div>
                 <div class="info-row" style="margin-top: 20px;">
-                    <span>Device Uptime: <span id="uptime" aria-live="polite">0</span> minutes</span>
+                    <span id="uptimeLabel">Device Uptime: <span id="uptime" aria-live="polite">0</span> minutes</span>
                 </div>
                 <div class="info-row">
-                    <span>Last Data: <span id="lastDataTime" aria-live="polite">N/A</span></span>
+                    <span id="lastDataTimeLabel">Last Data: <span id="lastDataTime" aria-live="polite">N/A</span></span>
                 </div>
                 <div class="info-row">
-                    <span>Samples: <span id="sampleCount" aria-live="polite">0</span></span>
+                    <span id="sampleCountLabel">Samples: <span id="sampleCount" aria-live="polite">0</span></span>
                 </div>
+                <button class="info-button" aria-label="Show more information about System Status" aria-expanded="false" aria-controls="systemStatusInfoModal" onclick="showModalInfo('systemStatus')">
+                    Info
+                </button>
             </section>
 
             <!-- Configuration Info -->
             <section class="card" aria-labelledby="config-title">
                 <h2 class="card-title" id="config-title">Configuration</h2>
-                <dl class="info-row">
-                    <dt>Venturi Type:</dt>
-                    <dd id="venturiType">DOUBLE_PIPE</dd>
+                <dl class="info-list">
+                    <div class="info-row">
+                        <dt id="venturiTypeLabel">Venturi Type:</dt>
+                        <dd id="venturiType" aria-labelledby="venturiTypeLabel">DOUBLE_PIPE</dd>
+                    </div>
+                    <div class="info-row">
+                        <dt id="mainDiameterLabel">Main Pipe Diameter:</dt>
+                        <dd id="mainDiameter" aria-labelledby="mainDiameterLabel">20.0 mm</dd>
+                    </div>
+                    <div class="info-row">
+                        <dt id="throatDiameterLabel">Throat Diameter:</dt>
+                        <dd id="throatDiameter" aria-labelledby="throatDiameterLabel">10.0 mm</dd>
+                    </div>
+                    <div class="info-row">
+                        <dt id="areaRatioLabel">Area Ratio:</dt>
+                        <dd class="ratio-value" id="areaRatio" aria-labelledby="areaRatioLabel">4.00</dd>
+                    </div>
                 </dl>
-                <dl class="info-row">
-                    <dt>Main Pipe Diameter:</dt>
-                    <dd id="mainDiameter">20.0 mm</dd>
-                </dl>
-                <dl class="info-row">
-                    <dt>Throat Diameter:</dt>
-                    <dd id="throatDiameter">10.0 mm</dd>
-                </dl>
-                <dl class="info-row">
-                    <dt>Area Ratio:</dt>
-                    <dd class="ratio-value" id="areaRatio">4.00</dd>
-                </dl>
+                <button class="info-button" aria-label="Show more information about Configuration" aria-expanded="false" aria-controls="configInfoModal" onclick="showModalInfo('config')">
+                    Info
+                </button>
             </section>
         </div>
     </main>
 
-    <div class="modal-overlay" id="modalOverlay" role="dialog" aria-hidden="true"></div>
+    <!-- Modal for additional information -->
+    <div class="modal-overlay" id="modalOverlay" role="dialog" aria-labelledby="modalTitle" aria-hidden="true" aria-modal="true"></div>
 
-    <div class="modal" id="infoModal" role="dialog" aria-labelledby="modalTitle" aria-modal="true" aria-hidden="true">
+    <div class="modal" id="infoModal" aria-hidden="true">
         <div class="modal-header">
             <h3 class="modal-title" id="modalTitle">Chart Information</h3>
             <button class="modal-close" id="modalClose" aria-label="Close dialog">&times;</button>
         </div>
-        <div class="modal-content" id="modalContent">
-            <!-- Modal content will be inserted here -->
+        <div class="modal-content" id="modalContent" tabindex="0">
+            <!-- Content will be inserted here -->
         </div>
         <div class="modal-drag-handle" aria-hidden="true"></div>
     </div>
@@ -1084,6 +1146,7 @@
         const modalContent = document.getElementById('modalContent');
         const modalClose = document.getElementById('modalClose');
         const modalDragHandle = document.querySelector('.modal-drag-handle');
+        const modalHeader = document.querySelector('.modal-header');
         
         // Chart information content
         const chartInfo = {
@@ -1201,33 +1264,50 @@
             }
         };
         
-        // Add info buttons to each card
-        document.querySelectorAll('.card').forEach(card => {
-            // Skip system status and configuration cards
-            if (!card.querySelector('.chart-container') && !card.querySelector('.chart-dual') && !card.querySelector('.gauge-container')) {
-                return;
+        // Wait for the DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            const skipLink = document.getElementById('skip-link');
+            const mainContent = document.getElementById('main-content');
+            
+            if (skipLink && mainContent) {
+                skipLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    mainContent.setAttribute('tabindex', '-1');
+                    mainContent.focus();
+                });
+
+                mainContent.addEventListener('blur', function() {
+                    mainContent.removeAttribute('tabindex');
+                });
             }
-            
-            const cardTitle = card.querySelector('.card-title').textContent;
-            let chartType = '';
-            
-            if (cardTitle.includes('Pressure 1')) chartType = 'pressure1';
-            else if (cardTitle.includes('Pressure 2')) chartType = 'pressure2';
-            else if (cardTitle.includes('Differential')) chartType = 'diffPressure';
-            else if (cardTitle.includes('Flow Rate') && !cardTitle.includes('Gauge')) chartType = 'flowRate';
-            else if (cardTitle.includes('Comparison')) chartType = 'pressureComp';
-            else if (cardTitle.includes('Gauge')) chartType = 'flowGauge';
-            else if (cardTitle.includes('Efficiency')) chartType = 'efficiency';
-            else if (cardTitle.includes('Reynolds')) chartType = 'reynolds';
-            
-            if (chartType) {
-                const infoButton = document.createElement('button');
-                infoButton.className = 'card-info-button';
-                infoButton.innerHTML = 'i';
-                infoButton.addEventListener('click', () => openModal(chartType));
-                card.style.position = 'relative';
-                card.appendChild(infoButton);
-            }
+            // Add info buttons to each card
+            document.querySelectorAll('.card').forEach(card => {
+                // Skip system status and configuration cards
+                if (!card.querySelector('.chart-container') && !card.querySelector('.chart-dual') && !card.querySelector('.gauge-container')) {
+                    return;
+                }
+                
+                const cardTitle = card.querySelector('.card-title').textContent;
+                let chartType = '';
+                
+                if (cardTitle.includes('Pressure 1')) chartType = 'pressure1';
+                else if (cardTitle.includes('Pressure 2')) chartType = 'pressure2';
+                else if (cardTitle.includes('Differential')) chartType = 'diffPressure';
+                else if (cardTitle.includes('Flow Rate') && !cardTitle.includes('Gauge')) chartType = 'flowRate';
+                else if (cardTitle.includes('Comparison')) chartType = 'pressureComp';
+                else if (cardTitle.includes('Gauge')) chartType = 'flowGauge';
+                else if (cardTitle.includes('Efficiency')) chartType = 'efficiency';
+                else if (cardTitle.includes('Reynolds')) chartType = 'reynolds';
+                
+                if (chartType) {
+                    const infoButton = document.createElement('button');
+                    infoButton.className = 'card-info-button';
+                    infoButton.innerHTML = 'i';
+                    infoButton.addEventListener('click', () => openModal(chartType));
+                    card.style.position = 'relative';
+                    card.appendChild(infoButton);
+                }
+            });
         });
         
         // Open modal with specific content
@@ -1250,6 +1330,16 @@
             modalOverlay.classList.remove('active');
             infoModal.classList.remove('active');
             document.body.style.overflow = '';
+            
+            // Reset any transform applied during dragging
+            infoModal.style.transform = '';
+            
+            // Reset transform based on screen size
+            if (window.innerWidth >= 768) {
+                infoModal.style.transform = 'translate(-50%, -50%) scale(0.9)';
+            } else {
+                infoModal.style.transform = 'translateX(-50%) translateY(100%)';
+            }
         }
         
         // Event listeners
@@ -1261,15 +1351,42 @@
         let currentY = 0;
         let isDragging = false;
         
-        modalDragHandle.addEventListener('touchstart', (e) => {
+        // Enable drag on both the handle and the header
+        [modalDragHandle, modalHeader].forEach(element => {
+            // Touch events for mobile
+            element.addEventListener('touchstart', handleDragStart, { passive: false });
+            
+            // Mouse events for desktop (optional)
+            element.addEventListener('mousedown', handleMouseDragStart);
+        });
+        
+        function handleDragStart(e) {
             startY = e.touches[0].clientY;
             currentY = startY;
             isDragging = true;
             e.preventDefault();
-        }, { passive: false });
+        }
         
-        window.addEventListener('touchmove', (e) => {
+        function handleMouseDragStart(e) {
+            startY = e.clientY;
+            currentY = startY;
+            isDragging = true;
+            
+            // Add mouse move and up events only when needed
+            window.addEventListener('mousemove', handleMouseDragMove);
+            window.addEventListener('mouseup', handleMouseDragEnd);
+            
+            e.preventDefault();
+        }
+        
+        window.addEventListener('touchmove', handleDragMove, { passive: false });
+        
+        function handleDragMove(e) {
             if (!isDragging) return;
+            
+            // Only process for mobile view
+            if (window.innerWidth >= 768) return;
+            
             currentY = e.touches[0].clientY;
             
             // Calculate how much the modal has been dragged down
@@ -1277,12 +1394,32 @@
             
             // Only move the modal down if dragging down
             if (deltaY > 0) {
-                infoModal.style.transform = `translate(-50%, ${deltaY}px)`;
+                infoModal.style.transform = `translateX(-50%) translateY(${deltaY}px)`;
             }
+            
             e.preventDefault();
-        }, { passive: false });
+        }
         
-        window.addEventListener('touchend', () => {
+        function handleMouseDragMove(e) {
+            if (!isDragging) return;
+            
+            // Only process for mobile view
+            if (window.innerWidth >= 768) return;
+            
+            currentY = e.clientY;
+            
+            // Calculate how much the modal has been dragged down
+            const deltaY = currentY - startY;
+            
+            // Only move the modal down if dragging down
+            if (deltaY > 0) {
+                infoModal.style.transform = `translateX(-50%) translateY(${deltaY}px)`;
+            }
+        }
+        
+        window.addEventListener('touchend', handleDragEnd);
+        
+        function handleDragEnd() {
             if (!isDragging) return;
             isDragging = false;
             
@@ -1294,7 +1431,39 @@
                 closeModal();
             } else {
                 // Otherwise, snap back to open position
-                infoModal.style.transform = 'translate(-50%, 0)';
+                infoModal.style.transform = 'translateX(-50%) translateY(0)';
+            }
+        }
+        
+        function handleMouseDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            // Remove event listeners
+            window.removeEventListener('mousemove', handleMouseDragMove);
+            window.removeEventListener('mouseup', handleMouseDragEnd);
+            
+            // Calculate how much the modal has been dragged down
+            const deltaY = currentY - startY;
+            
+            // If dragged enough, close the modal
+            if (deltaY > 100) {
+                closeModal();
+            } else {
+                // Otherwise, snap back to open position
+                infoModal.style.transform = 'translateX(-50%) translateY(0)';
+            }
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            // Update modal position based on screen size if the modal is active
+            if (infoModal.classList.contains('active')) {
+                if (window.innerWidth >= 768) {
+                    infoModal.style.transform = 'translate(-50%, -50%) scale(1)';
+                } else {
+                    infoModal.style.transform = 'translateX(-50%) translateY(0)';
+                }
             }
         });
     </script>
