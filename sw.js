@@ -2,8 +2,6 @@ const CACHE_NAME = 'venturi-meter-v1';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/styles.css',
-  '/script.js',
   '/venturi_data.json',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js'
 ];
