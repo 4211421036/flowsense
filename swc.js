@@ -11,8 +11,7 @@ const EXCLUDE_PATTERNS = [
   /LICENSE$/,
   /sws\.js$/, // Exclude this generator file
   /package(-lock)?\.json$/,
-  /node_modules\//,
-  /sw\.js$/ // Exclude the output file to avoid recursive caching
+  /node_modules\//
 ];
 
 
