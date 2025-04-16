@@ -12,11 +12,11 @@
              --primary-bg: #151C35;
              --card-bg: #1E274E;
              --text-color: #FFFFFF;
-             --accent-blue: #65D8E4;
-             --accent-orange: #FF9F45;
+             --accent-blue: #0099cc;
+             --accent-orange: #ff9900;
              --accent-yellow: #FFD166;
-             --accent-red: #EF476F;
-             --accent-green: #06D6A0;
+             --accent-red: #cc0000;
+             --accent-green: #00b300;
          }
  
          * {
@@ -100,10 +100,12 @@
          }
  
          .status-indicator {
-             width: 12px;
-             height: 12px;
-             border-radius: 50%;
-         }
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
  
          .status-text {
              font-size: 0.85rem;
@@ -295,10 +297,10 @@
          }
  
          /* Status colors */
-         .normal { background-color: var(--accent-green); }
-         .warning { background-color: var(--accent-yellow); }
-         .alert { background-color: var(--accent-red); }
-         .info { background-color: var(--accent-blue); }
+         .normal { background-color: var(--accent-green); box-shadow: 0 0 0 2px #fff, 0 0 0 3px #00b300; /* Double border for visibility */ }
+         .warning { background-color: var(--accent-yellow); box-shadow: 0 0 0 2px #fff, 0 0 0 3px #ff9900; }
+         .alert { background-color: var(--accent-red); box-shadow: 0 0 0 2px #fff, 0 0 0 3px #cc0000;}
+         .info { background-color: var(--accent-blue); box-shadow: 0 0 0 2px #fff, 0 0 0 3px #0099cc; }
          ul { padding: 25px; }
       /* Modal Styles */
     .modal-overlay {
@@ -398,6 +400,17 @@
         font-size: 14px;
         cursor: pointer;
         z-index: 10;
+    }
+    a {
+        color: #0066cc; /* Ensure good contrast ratio */
+        text-decoration: underline; /* Always underline links */
+        font-weight: 500; /* Slightly bolder than regular text */
+    }
+    
+    a:hover, a:focus {
+        text-decoration: double underline; /* Enhanced underline on hover/focus */
+        outline: 2px solid currentColor; /* Outline for focus state */
+        outline-offset: 2px;
     }
     
     /* Responsive styles */
@@ -537,256 +550,258 @@
  </head>
  <body>
      <nav aria-label="Skip navigation">
-        <a href="#main-content" class="skip-link" accesskey="s">Skip to main content</a>
-    </nav>
+    <a href="#main-content" class="skip-link" accesskey="s">Skip to main content</a>
+</nav>
 
-    <header role="banner">
+<header role="banner">
     <div class="header-title">
         <h1>Venturi Meter Monitoring</h1>
         <div class="last-update" id="lastUpdate" aria-live="polite" aria-atomic="true">12:09 PM</div>
     </div>
     <button class="refresh-button" onclick="fetchData()" aria-label="Refresh data" accesskey="r">
-        <span role="tooltip" title="Refresh data" id="refreshIcon" aria-hidden="true" aria-label="refreshIcon">↻</span> Refresh
+        <!-- Fixed tooltip role -->
+        <span id="refreshIcon" aria-label="Refresh data" class="refresh-icon" aria-hidden="true">↻</span> Refresh
     </button>
 </header>
 
-  <!-- Add this progress bar element -->
-  <div id="loadingProgress" role="progressbar" aria-label="Loading data" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-busy="false" style="height: 3px; width: 0%; background-color: #65D8E4; transition: width 0.3s ease;"></div>
+<!-- Add this progress bar element -->
+<div id="loadingProgress" role="progressbar" aria-label="Loading data" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-busy="false" style="height: 3px; width: 0%; background-color: #65D8E4; transition: width 0.3s ease;"></div>
 
-    <main id="main-content" role="main" tabindex="-1">
-        <div role="menuitem" aria-label="card" title="Dashboard" class="dashboard">
-            <!-- Pressure 1 Card -->
-            <section class="card" aria-labelledby="pressure1-title" aria-describedby="pressure1-desc">
-                <h2 class="card-title" id="pressure1-title">Pressure 1</h2>
-                <div id="pressure1-desc" class="visually-hidden">Pressure reading from sensor 1</div>
-                <div class="card-value">
-                    <span id="pressure1Value" aria-live="polite" aria-atomic="true">0.00</span>
-                    <span class="card-unit">Pa</span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="pressure1Chart" aria-label="Pressure 1 over time chart" role="img">
-                        <p role="text">Graph showing pressure 1 measurements over time</p>
-                    </canvas>
-                </div>
-                <div class="card-status">
-                    <div class="status-indicator normal" id="pressure1Status" aria-hidden="true"></div>
-                    <div class="status-text" id="pressure1StatusText" aria-live="polite" aria-atomic="true">Stable</div>
-                </div>
-            </section>
+<main id="main-content" role="main" tabindex="-1">
+    <!-- Removed incorrect role="menuitem" -->
+    <div class="dashboard" aria-label="Dashboard panels">
+        <!-- Pressure 1 Card -->
+        <section class="card" aria-labelledby="pressure1-title" aria-describedby="pressure1-desc">
+            <h2 class="card-title" id="pressure1-title">Pressure 1</h2>
+            <div id="pressure1-desc" class="visually-hidden">Pressure reading from sensor 1</div>
+            <div class="card-value">
+                <span id="pressure1Value" aria-live="polite" aria-atomic="true">0.00</span>
+                <span class="card-unit">Pa</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="pressure1Chart" aria-label="Pressure 1 over time chart" role="img">
+                    <p role="text">Graph showing pressure 1 measurements over time</p>
+                </canvas>
+            </div>
+            <div class="card-status">
+                <div class="status-indicator normal" id="pressure1Status" aria-hidden="true"></div>
+                <div class="status-text" id="pressure1StatusText" aria-live="polite" aria-atomic="true">Stable</div>
+            </div>
+        </section>
 
-            <!-- Pressure 2 Card -->
-            <section class="card" aria-labelledby="pressure2-title" aria-describedby="pressure2-desc">
-                <h2 class="card-title" id="pressure2-title">Pressure 2</h2>
-                <div id="pressure2-desc" class="visually-hidden">Pressure reading from sensor 2</div>
-                <div class="card-value">
-                    <span id="pressure2Value" aria-live="polite" aria-atomic="true">0.00</span>
-                    <span class="card-unit">Pa</span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="pressure2Chart" aria-label="Pressure 2 over time chart" role="img">
-                        <p role="text">Graph showing pressure 2 measurements over time</p>
-                    </canvas>
-                </div>
-                <div class="card-status">
-                    <div class="status-indicator normal" id="pressure2Status" aria-hidden="true"></div>
-                    <div class="status-text" id="pressure2StatusText" aria-live="polite" aria-atomic="true">Stable</div>
-                </div>
-            </section>
+        <!-- Pressure 2 Card -->
+        <section class="card" aria-labelledby="pressure2-title" aria-describedby="pressure2-desc">
+            <h2 class="card-title" id="pressure2-title">Pressure 2</h2>
+            <div id="pressure2-desc" class="visually-hidden">Pressure reading from sensor 2</div>
+            <div class="card-value">
+                <span id="pressure2Value" aria-live="polite" aria-atomic="true">0.00</span>
+                <span class="card-unit">Pa</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="pressure2Chart" aria-label="Pressure 2 over time chart" role="img">
+                    <p role="text">Graph showing pressure 2 measurements over time</p>
+                </canvas>
+            </div>
+            <div class="card-status">
+                <div class="status-indicator normal" id="pressure2Status" aria-hidden="true"></div>
+                <div class="status-text" id="pressure2StatusText" aria-live="polite" aria-atomic="true">Stable</div>
+            </div>
+        </section>
 
-            <!-- Differential Pressure Card -->
-            <section class="card" aria-labelledby="diffPressure-title" aria-describedby="diffPressure-desc">
-                <h2 class="card-title" id="diffPressure-title">Differential Pressure</h2>
-                <div id="diffPressure-desc" class="visually-hidden">Difference between pressure 1 and pressure 2</div>
-                <div class="card-value">
-                    <span id="diffPressureValue" aria-live="polite" aria-atomic="true">0.00</span>
-                    <span class="card-unit">Pa</span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="diffPressureChart" aria-label="Differential pressure over time chart" role="img">
-                        <p role="text">Graph showing differential pressure measurements over time</p>
-                    </canvas>
-                </div>
-                <div class="card-status">
-                    <div class="status-indicator info" id="diffStatus" aria-hidden="true"></div>
-                    <div class="status-text" id="diffStatusText" aria-live="polite" aria-atomic="true">Normal differential</div>
-                </div>
-            </section>
+        <!-- Differential Pressure Card -->
+        <section class="card" aria-labelledby="diffPressure-title" aria-describedby="diffPressure-desc">
+            <h2 class="card-title" id="diffPressure-title">Differential Pressure</h2>
+            <div id="diffPressure-desc" class="visually-hidden">Difference between pressure 1 and pressure 2</div>
+            <div class="card-value">
+                <span id="diffPressureValue" aria-live="polite" aria-atomic="true">0.00</span>
+                <span class="card-unit">Pa</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="diffPressureChart" aria-label="Differential pressure over time chart" role="img">
+                    <p role="text">Graph showing differential pressure measurements over time</p>
+                </canvas>
+            </div>
+            <div class="card-status">
+                <div class="status-indicator info" id="diffStatus" aria-hidden="true"></div>
+                <div class="status-text" id="diffStatusText" aria-live="polite" aria-atomic="true">Normal differential</div>
+            </div>
+        </section>
 
-            <!-- Flow Rate Card -->
-            <section class="card" aria-labelledby="flowRate-title" aria-describedby="flowRate-desc">
-                <h2 class="card-title" id="flowRate-title">Flow Rate</h2>
-                <div id="flowRate-desc" class="visually-hidden">Calculated flow rate through the venturi meter</div>
-                <div class="card-value">
-                    <span id="flowRateValue" aria-live="polite" aria-atomic="true">0.00</span>
-                    <span class="card-unit">L/min</span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="flowRateChart" aria-label="Flow rate over time chart" role="img">
-                        <p role="text">Graph showing flow rate measurements over time</p>
-                    </canvas>
-                </div>
-                <div class="card-status">
-                    <div class="status-indicator normal" id="flowStatus" aria-hidden="true"></div>
-                    <div class="status-text" id="flowStatusText" aria-live="polite" aria-atomic="true">Normal flow</div>
-                </div>
-            </section>
+        <!-- Flow Rate Card -->
+        <section class="card" aria-labelledby="flowRate-title" aria-describedby="flowRate-desc">
+            <h2 class="card-title" id="flowRate-title">Flow Rate</h2>
+            <div id="flowRate-desc" class="visually-hidden">Calculated flow rate through the venturi meter</div>
+            <div class="card-value">
+                <span id="flowRateValue" aria-live="polite" aria-atomic="true">0.00</span>
+                <span class="card-unit">L/min</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="flowRateChart" aria-label="Flow rate over time chart" role="img">
+                    <p role="text">Graph showing flow rate measurements over time</p>
+                </canvas>
+            </div>
+            <div class="card-status">
+                <div class="status-indicator normal" id="flowStatus" aria-hidden="true"></div>
+                <div class="status-text" id="flowStatusText" aria-live="polite" aria-atomic="true">Normal flow</div>
+            </div>
+        </section>
 
-            <!-- Pressure Comparison -->
-            <section class="card" aria-labelledby="pressureComp-title" aria-describedby="pressureComp-desc">
-                <h2 class="card-title" id="pressureComp-title">Pressure Comparison</h2>
-                <div id="pressureComp-desc" class="visually-hidden">Comparison between pressure sensor 1 and pressure sensor 2</div>
-                <div class="dual-value">
-                    <div class="value-block">
-                        <h3 class="sensor-label">Sensor 1</h3>
-                        <div class="sensor-value">
-                            <span id="compPressure1" aria-live="polite" aria-atomic="true">0.00</span>
-                            <span class="value-unit">Pa</span>
-                        </div>
-                    </div>
-                    <div class="value-block">
-                        <h3 class="sensor-label">Sensor 2</h3>
-                        <div class="sensor-value">
-                            <span id="compPressure2" aria-live="polite" aria-atomic="true">0.00</span>
-                            <span class="value-unit">Pa</span>
-                        </div>
+        <!-- Pressure Comparison -->
+        <section class="card" aria-labelledby="pressureComp-title" aria-describedby="pressureComp-desc">
+            <h2 class="card-title" id="pressureComp-title">Pressure Comparison</h2>
+            <div id="pressureComp-desc" class="visually-hidden">Comparison between pressure sensor 1 and pressure sensor 2</div>
+            <div class="dual-value">
+                <div class="value-block">
+                    <h3 class="sensor-label">Sensor 1</h3>
+                    <div class="sensor-value">
+                        <span id="compPressure1" aria-live="polite" aria-atomic="true">0.00</span>
+                        <span class="value-unit">Pa</span>
                     </div>
                 </div>
-                <div class="chart-dual">
-                    <canvas id="pressureCompChart" aria-label="Pressure comparison chart" role="img">
-                        <p role="text">Graph comparing pressure measurements from both sensors</p>
-                    </canvas>
-                </div>
-                <div class="dominant-factor">
-                    Difference: <span class="diff-value" id="pressureDiffText" aria-live="polite" aria-atomic="true">0.00 Pa</span>
-                </div>
-            </section>
-
-            <!-- Flow Rate Gauge -->
-            <section class="card" aria-labelledby="flowGauge-title" aria-describedby="flowGauge-desc">
-                <h2 class="card-title" id="flowGauge-title">Flow Rate Gauge</h2>
-                <div id="flowGauge-desc" class="visually-hidden">Visual gauge showing current flow rate</div>
-                <div class="gauge-container">
-                    <canvas id="flowGauge" aria-label="Flow rate gauge visualization" role="img">
-                        <p role="text">Gauge visualization of current flow rate</p>
-                    </canvas>
-                    <div class="gauge-center">
-                        <div class="gauge-value" id="gaugeFlowValue" aria-live="polite" aria-atomic="true">0.00</div>
-                        <div class="gauge-label">L/min</div>
+                <div class="value-block">
+                    <h3 class="sensor-label">Sensor 2</h3>
+                    <div class="sensor-value">
+                        <span id="compPressure2" aria-live="polite" aria-atomic="true">0.00</span>
+                        <span class="value-unit">Pa</span>
                     </div>
                 </div>
-                <div class="info-row">
-                    <span>Min: <span id="minFlow" aria-live="polite" aria-atomic="true">0.00</span> L/min</span>
-                    <span>Max: <span id="maxFlow" aria-live="polite" aria-atomic="true">10.00</span> L/min</span>
-                </div>
-            </section>
+            </div>
+            <div class="chart-dual">
+                <canvas id="pressureCompChart" aria-label="Pressure comparison chart" role="img">
+                    <p role="text">Graph comparing pressure measurements from both sensors</p>
+                </canvas>
+            </div>
+            <div class="dominant-factor">
+                Difference: <span class="diff-value" id="pressureDiffText" aria-live="polite" aria-atomic="true">0.00 Pa</span>
+            </div>
+        </section>
 
-            <!-- Efficiency Card -->
-            <section class="card" aria-labelledby="efficiency-title" aria-describedby="efficiency-desc">
-                <h2 class="card-title" id="efficiency-title">Venturi Efficiency</h2>
-                <div id="efficiency-desc" class="visually-hidden">Efficiency percentage calculated from pressure recovery</div>
-                <div class="gauge-container">
-                    <canvas id="efficiencyGauge" aria-label="Venturi efficiency gauge visualization" role="img">
-                        <p role="text">Gauge visualization of venturi efficiency</p>
-                    </canvas>
-                    <div class="gauge-center">
-                        <div class="gauge-value" id="efficiencyValue" aria-live="polite" aria-atomic="true">0</div>
-                        <div class="gauge-label">%</div>
+        <!-- Flow Rate Gauge -->
+        <section class="card" aria-labelledby="flowGauge-title" aria-describedby="flowGauge-desc">
+            <h2 class="card-title" id="flowGauge-title">Flow Rate Gauge</h2>
+            <div id="flowGauge-desc" class="visually-hidden">Visual gauge showing current flow rate</div>
+            <div class="gauge-container" role="meter" aria-labelledby="flowGauge-title" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10">
+                <canvas id="flowGauge" aria-label="Flow rate gauge visualization" role="img">
+                    <p role="text">Gauge visualization of current flow rate</p>
+                </canvas>
+                <div class="gauge-center">
+                    <div class="gauge-value" id="gaugeFlowValue" aria-live="polite" aria-atomic="true">0.00</div>
+                    <div class="gauge-label">L/min</div>
+                </div>
+            </div>
+            <div class="info-row">
+                <span>Min: <span id="minFlow" aria-live="polite" aria-atomic="true">0.00</span> L/min</span>
+                <span>Max: <span id="maxFlow" aria-live="polite" aria-atomic="true">10.00</span> L/min</span>
+            </div>
+        </section>
+
+        <!-- Efficiency Card -->
+        <section class="card" aria-labelledby="efficiency-title" aria-describedby="efficiency-desc">
+            <h2 class="card-title" id="efficiency-title">Venturi Efficiency</h2>
+            <div id="efficiency-desc" class="visually-hidden">Efficiency percentage calculated from pressure recovery</div>
+            <div class="gauge-container" role="meter" aria-labelledby="efficiency-title" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <canvas id="efficiencyGauge" aria-label="Venturi efficiency gauge visualization" role="img">
+                    <p role="text">Gauge visualization of venturi efficiency</p>
+                </canvas>
+                <div class="gauge-center">
+                    <div class="gauge-value" id="efficiencyValue" aria-live="polite" aria-atomic="true">0</div>
+                    <div class="gauge-label">%</div>
+                </div>
+            </div>
+            <div class="info-row">
+                <span>Calculated from pressure recovery</span>
+            </div>
+        </section>
+
+        <!-- Reynolds Number -->
+        <section class="card" aria-labelledby="reynolds-title" aria-describedby="reynolds-desc">
+            <h2 class="card-title" id="reynolds-title">Reynolds Number</h2>
+            <div id="reynolds-desc" class="visually-hidden">Dimensionless number indicating flow characteristics</div>
+            <div class="card-value">
+                <span id="reynoldsValue" aria-live="polite" aria-atomic="true">0</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="reynoldsChart" aria-label="Reynolds number over time chart" role="img">
+                    <p role="text">Graph showing Reynolds number measurements over time</p>
+                </canvas>
+            </div>
+            <div class="card-status">
+                <div class="status-indicator info" id="flowTypeStatus" aria-hidden="true"></div>
+                <div class="status-text" id="flowTypeText" aria-live="polite" aria-atomic="true">Laminar Flow</div>
+            </div>
+        </section>
+
+        <!-- System Status -->
+        <section class="card" aria-labelledby="systemStatus-title" aria-describedby="systemStatus-desc">
+            <h2 class="card-title" id="systemStatus-title">System Status</h2>
+            <div id="systemStatus-desc" class="visually-hidden">Current status of monitoring system components</div>
+            <div class="dual-value">
+                <div class="value-block">
+                    <h3 class="sensor-label">Sensor 1</h3>
+                    <div class="sensor-value">
+                        <span id="sensor1Status" aria-live="polite" aria-atomic="true">OK</span>
                     </div>
                 </div>
-                <div class="info-row">
-                    <span>Calculated from pressure recovery</span>
-                </div>
-            </section>
-
-            <!-- Reynolds Number -->
-            <section class="card" aria-labelledby="reynolds-title" aria-describedby="reynolds-desc">
-                <h2 class="card-title" id="reynolds-title">Reynolds Number</h2>
-                <div id="reynolds-desc" class="visually-hidden">Dimensionless number indicating flow characteristics</div>
-                <div class="card-value">
-                    <span id="reynoldsValue" aria-live="polite" aria-atomic="true">0</span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="reynoldsChart" aria-label="Reynolds number over time chart" role="img">
-                        <p role="text">Graph showing Reynolds number measurements over time</p>
-                    </canvas>
-                </div>
-                <div class="card-status">
-                    <div class="status-indicator info" id="flowTypeStatus" aria-hidden="true"></div>
-                    <div class="status-text" id="flowTypeText" aria-live="polite" aria-atomic="true">Laminar Flow</div>
-                </div>
-            </section>
-
-            <!-- System Status -->
-            <section class="card" aria-labelledby="systemStatus-title" aria-describedby="systemStatus-desc">
-                <h2 class="card-title" id="systemStatus-title">System Status</h2>
-                <div id="systemStatus-desc" class="visually-hidden">Current status of monitoring system components</div>
-                <div class="dual-value">
-                    <div class="value-block">
-                        <h3 class="sensor-label">Sensor 1</h3>
-                        <div class="sensor-value">
-                            <span id="sensor1Status" aria-live="polite" aria-atomic="true">OK</span>
-                        </div>
-                    </div>
-                    <div class="value-block">
-                        <h3 class="sensor-label">Sensor 2</h3>
-                        <div class="sensor-value">
-                            <span id="sensor2Status" aria-live="polite" aria-atomic="true">OK</span>
-                        </div>
+                <div class="value-block">
+                    <h3 class="sensor-label">Sensor 2</h3>
+                    <div class="sensor-value">
+                        <span id="sensor2Status" aria-live="polite" aria-atomic="true">OK</span>
                     </div>
                 </div>
-                <div class="info-row" style="margin-top: 20px;">
-                    <span>Device Uptime: <span id="uptime" aria-live="polite" aria-atomic="true">0</span> minutes</span>
-                </div>
-                <div class="info-row">
-                    <span>Last Data: <span id="lastDataTime" aria-live="polite" aria-atomic="true">N/A</span></span>
-                </div>
-                <div class="info-row">
-                    <span>Samples: <span id="sampleCount" aria-live="polite" aria-atomic="true">0</span></span>
-                </div>
-            </section>
+            </div>
+            <div class="info-row" style="margin-top: 20px;">
+                <span>Device Uptime: <span id="uptime" aria-live="polite" aria-atomic="true">0</span> minutes</span>
+            </div>
+            <div class="info-row">
+                <span>Last Data: <span id="lastDataTime" aria-live="polite" aria-atomic="true">N/A</span></span>
+            </div>
+            <div class="info-row">
+                <span>Samples: <span id="sampleCount" aria-live="polite" aria-atomic="true">0</span></span>
+            </div>
+        </section>
 
-            <!-- Configuration Info -->
-            <section class="card" aria-labelledby="config-title" aria-describedby="config-desc">
-                <h2 class="card-title" id="config-title">Configuration</h2>
-                <div id="config-desc" class="visually-hidden">Venturi meter physical configuration parameters</div>
-                <dl class="info-row">
-                    <dt>Venturi Type:</dt>
-                    <dd id="venturiType">DOUBLE_PIPE</dd>
-                </dl>
-                <dl class="info-row">
-                    <dt>Main Pipe Diameter:</dt>
-                    <dd id="mainDiameter">20.0 mm</dd>
-                </dl>
-                <dl class="info-row">
-                    <dt>Throat Diameter:</dt>
-                    <dd id="throatDiameter">10.0 mm</dd>
-                </dl>
-                <dl class="info-row">
-                    <dt>Area Ratio:</dt>
-                    <dd class="ratio-value" id="areaRatio">4.00</dd>
-                </dl>
-            </section>
-        </div>
-    </main>
-
-    <div class="modal-overlay" id="modalOverlay" role="dialog" aria-hidden="true" style="display: none;"></div>
-  
-    <!-- Modal Template -->
-    <div class="modal" id="infoModal" role="dialog" aria-labelledby="modalTitle" aria-describedby="modalDesc" aria-modal="true" aria-hidden="true" style="display: none;">
-        <div class="modal-drag-handle" aria-hidden="true"></div>
-        <div class="modal-header">
-            <h3 class="modal-title" id="modalTitle">Chart Information</h3>
-            <div id="modalDesc" class="visually-hidden">Detailed information about the current chart</div>
-            <button class="modal-close" id="modalClose" aria-label="Close dialog">&times;</button>
-        </div>
-        <div class="modal-content" id="modalContent">
-            <!-- Content will be inserted here -->
-        </div>
+        <!-- Configuration Info -->
+        <section class="card" aria-labelledby="config-title" aria-describedby="config-desc">
+            <h2 class="card-title" id="config-title">Configuration</h2>
+            <div id="config-desc" class="visually-hidden">Venturi meter physical configuration parameters</div>
+            <dl class="info-row">
+                <dt>Venturi Type:</dt>
+                <dd id="venturiType">DOUBLE_PIPE</dd>
+            </dl>
+            <dl class="info-row">
+                <dt>Main Pipe Diameter:</dt>
+                <dd id="mainDiameter">20.0 mm</dd>
+            </dl>
+            <dl class="info-row">
+                <dt>Throat Diameter:</dt>
+                <dd id="throatDiameter">10.0 mm</dd>
+            </dl>
+            <dl class="info-row">
+                <dt>Area Ratio:</dt>
+                <dd class="ratio-value" id="areaRatio">4.00</dd>
+            </dl>
+        </section>
     </div>
+</main>
 
-    <footer role="contentinfo" class="footer-info">
-        <p role="text">Venturi Meter Monitoring System | Last Updated: <span id="footerLastUpdate" aria-live="polite" aria-atomic="true">12:09 PM</span></p>
-    </footer>
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-hidden="true" style="display: none;"></div>
+
+<!-- Modal Template -->
+<div class="modal" id="infoModal" role="dialog" aria-labelledby="modalTitle" aria-describedby="modalDesc" aria-modal="true" aria-hidden="true" style="display: none;">
+    <div class="modal-drag-handle" aria-hidden="true"></div>
+    <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Chart Information</h3>
+        <div id="modalDesc" class="visually-hidden">Detailed information about the current chart</div>
+        <button class="modal-close" id="modalClose" aria-label="Close dialog">&times;</button>
+    </div>
+    <div class="modal-content" id="modalContent">
+        <!-- Content will be inserted here -->
+    </div>
+</div>
+
+<footer role="contentinfo" class="footer-info">
+    <p role="text">Venturi Meter Monitoring System | Last Updated: <span id="footerLastUpdate" aria-live="polite" aria-atomic="true">12:09 PM</span></p>
+</footer>
  
      <script>
          // Initialize charts with empty data
