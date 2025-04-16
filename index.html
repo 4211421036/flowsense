@@ -439,7 +439,7 @@
         background: none;
         border: none;
         color: #9DA3B4;
-        font-size: 24px;
+        font-size: 32px;
         cursor: pointer;
         padding: 0;
         line-height: 1;
@@ -479,14 +479,14 @@
         z-index: 10;
     }
     a {
-        color: #0066cc; /* Ensure good contrast ratio */
-        text-decoration: underline; /* Always underline links */
-        font-weight: 500; /* Slightly bolder than regular text */
+        color: #0066cc;
+        text-decoration: underline;
+        font-weight: 500;
     }
     
     a:hover, a:focus {
-        text-decoration: double underline; /* Enhanced underline on hover/focus */
-        outline: 2px solid currentColor; /* Outline for focus state */
+        text-decoration: double underline;
+        outline: 2px solid currentColor;
         outline-offset: 2px;
     }
     
@@ -515,7 +515,7 @@
             display: none;
         }
     }
-      /* Card styles for modal interaction */
+      
 .card.active-card {
     position: relative;
     z-index: 1001 !important;
@@ -523,7 +523,7 @@
     transition: all 0.3s ease;
 }
 
-/* Card highlight animation */
+
 @keyframes cardHighlight {
     0% { 
         box-shadow: 0 0 0 rgba(0, 0, 255, 0.1); 
@@ -542,13 +542,11 @@
     transition: all 0.3s ease;
     background-color: inherit;
     border-radius: inherit;
-    /* Ensure charts inside clone are visible */
     opacity: 1;
     visibility: visible;
 }
 
 .card-clone canvas {
-    /* Make sure canvas elements inside clone are visible */
     display: block !important;
     opacity: 1 !important;
 }
