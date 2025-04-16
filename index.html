@@ -222,17 +222,22 @@
 
         @media (min-width: 768px) {
             .modal {
-                top: 50%;
+                left: 50%;
                 bottom: auto;
+                top: 50%;
+                width: 90%;
+                max-width: 500px;
                 transform: translate(-50%, -50%) scale(0.9);
-                opacity: 0;
                 border-radius: 16px;
                 max-height: 80vh;
+                opacity: 0;
+                visibility: hidden;
             }
             
             .modal.active {
                 transform: translate(-50%, -50%) scale(1);
                 opacity: 1;
+                visibility: visible;
             }
             
             .modal-drag-handle {
@@ -319,6 +324,7 @@
         .warning { background-color: var(--accent-yellow); }
         .alert { background-color: var(--accent-red); }
         .info { background-color: var(--accent-blue); }
+        /* Modal Styles */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -339,26 +345,25 @@
         
         .modal {
             position: fixed;
+            left: 0;
+            right: 0;
             bottom: 0;
-            left: 50%;
-            transform: translateX(-50%) translateY(100%);
-            width: 90%;
-            max-width: 500px;
-            max-height: 70vh;
+            width: 100%;
+            max-height: 80vh;
             background-color: #1E2746;
             border-radius: 16px 16px 0 0;
             box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
             z-index: 1001;
+            transform: translateY(100%);
             transition: transform 0.3s ease-out;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            visibility: hidden;
+            margin: 0 auto;
         }
         
         .modal.active {
-            transform: translateX(-50%) translateY(0);
-            visibility: visible;
+            transform: translateY(0);
         }
         
         .modal-header {
@@ -367,7 +372,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: grab;
         }
         
         .modal-title {
@@ -418,19 +422,6 @@
             font-size: 14px;
             cursor: pointer;
             z-index: 10;
-        }
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 0;
-            background: #000;
-            color: white;
-            padding: 8px;
-            z-index: 100;
-            transition: top 0.3s;
-        }
-        .skip-link:focus {
-            top: 0;
         }
     </style>
 </head>
@@ -677,18 +668,17 @@
         </div>
     </main>
 
-    <!-- Modal for additional information -->
-    <div class="modal-overlay" id="modalOverlay" role="dialog" aria-labelledby="modalTitle" aria-hidden="true" aria-modal="true"></div>
-
-    <div class="modal" id="infoModal" aria-hidden="true">
+    <div class="modal-overlay" id="modalOverlay" style="display: none;"></div>
+    
+    <div class="modal" id="infoModal" style="display: none;">
         <div class="modal-header">
             <h3 class="modal-title" id="modalTitle">Chart Information</h3>
-            <button class="modal-close" id="modalClose" aria-label="Close dialog">&times;</button>
+            <button class="modal-close" id="modalClose">&times;</button>
         </div>
-        <div class="modal-content" id="modalContent" tabindex="0">
+        <div class="modal-content" id="modalContent">
             <!-- Content will be inserted here -->
         </div>
-        <div class="modal-drag-handle" aria-hidden="true"></div>
+        <div class="modal-drag-handle"></div>
     </div>
 
     <footer role="contentinfo" class="footer-info">
@@ -1146,7 +1136,6 @@
         const modalContent = document.getElementById('modalContent');
         const modalClose = document.getElementById('modalClose');
         const modalDragHandle = document.querySelector('.modal-drag-handle');
-        const modalHeader = document.querySelector('.modal-header');
         
         // Chart information content
         const chartInfo = {
@@ -1264,36 +1253,33 @@
             }
         };
         
-        // Wait for the DOM to be fully loaded
-        document.addEventListener('DOMContentLoaded', function () {
-            // Add info buttons to each card
-            document.querySelectorAll('.card').forEach(card => {
-                // Skip system status and configuration cards
-                if (!card.querySelector('.chart-container') && !card.querySelector('.chart-dual') && !card.querySelector('.gauge-container')) {
-                    return;
-                }
-                
-                const cardTitle = card.querySelector('.card-title').textContent;
-                let chartType = '';
-                
-                if (cardTitle.includes('Pressure 1')) chartType = 'pressure1';
-                else if (cardTitle.includes('Pressure 2')) chartType = 'pressure2';
-                else if (cardTitle.includes('Differential')) chartType = 'diffPressure';
-                else if (cardTitle.includes('Flow Rate') && !cardTitle.includes('Gauge')) chartType = 'flowRate';
-                else if (cardTitle.includes('Comparison')) chartType = 'pressureComp';
-                else if (cardTitle.includes('Gauge')) chartType = 'flowGauge';
-                else if (cardTitle.includes('Efficiency')) chartType = 'efficiency';
-                else if (cardTitle.includes('Reynolds')) chartType = 'reynolds';
-                
-                if (chartType) {
-                    const infoButton = document.createElement('button');
-                    infoButton.className = 'card-info-button';
-                    infoButton.innerHTML = 'i';
-                    infoButton.addEventListener('click', () => openModal(chartType));
-                    card.style.position = 'relative';
-                    card.appendChild(infoButton);
-                }
-            });
+        // Add info buttons to each card
+        document.querySelectorAll('.card').forEach(card => {
+            // Skip system status and configuration cards
+            if (!card.querySelector('.chart-container') && !card.querySelector('.chart-dual') && !card.querySelector('.gauge-container')) {
+                return;
+            }
+            
+            const cardTitle = card.querySelector('.card-title').textContent;
+            let chartType = '';
+            
+            if (cardTitle.includes('Pressure 1')) chartType = 'pressure1';
+            else if (cardTitle.includes('Pressure 2')) chartType = 'pressure2';
+            else if (cardTitle.includes('Differential')) chartType = 'diffPressure';
+            else if (cardTitle.includes('Flow Rate') && !cardTitle.includes('Gauge')) chartType = 'flowRate';
+            else if (cardTitle.includes('Comparison')) chartType = 'pressureComp';
+            else if (cardTitle.includes('Gauge')) chartType = 'flowGauge';
+            else if (cardTitle.includes('Efficiency')) chartType = 'efficiency';
+            else if (cardTitle.includes('Reynolds')) chartType = 'reynolds';
+            
+            if (chartType) {
+                const infoButton = document.createElement('button');
+                infoButton.className = 'card-info-button';
+                infoButton.innerHTML = 'i';
+                infoButton.addEventListener('click', () => openModal(chartType));
+                card.style.position = 'relative';
+                card.appendChild(infoButton);
+            }
         });
         
         // Open modal with specific content
@@ -1303,6 +1289,14 @@
             
             modalTitle.textContent = info.title;
             modalContent.innerHTML = info.content;
+            
+            // Show elements before activating
+            modalOverlay.style.display = 'block';
+            infoModal.style.display = 'flex';
+            
+            // Force reflow before adding active class
+            void modalOverlay.offsetWidth;
+            void infoModal.offsetWidth;
             
             modalOverlay.classList.add('active');
             infoModal.classList.add('active');
@@ -1315,17 +1309,13 @@
         function closeModal() {
             modalOverlay.classList.remove('active');
             infoModal.classList.remove('active');
-            document.body.style.overflow = '';
             
-            // Reset any transform applied during dragging
-            infoModal.style.transform = '';
-            
-            // Reset transform based on screen size
-            if (window.innerWidth >= 768) {
-                infoModal.style.transform = 'translate(-50%, -50%) scale(0.9)';
-            } else {
-                infoModal.style.transform = 'translateX(-50%) translateY(100%)';
-            }
+            // Wait for transition to complete before hiding
+            setTimeout(() => {
+                modalOverlay.style.display = 'none';
+                infoModal.style.display = 'none';
+                document.body.style.overflow = '';
+            }, 300);
         }
         
         // Event listeners
@@ -1337,42 +1327,15 @@
         let currentY = 0;
         let isDragging = false;
         
-        // Enable drag on both the handle and the header
-        [modalDragHandle, modalHeader].forEach(element => {
-            // Touch events for mobile
-            element.addEventListener('touchstart', handleDragStart, { passive: false });
-            
-            // Mouse events for desktop (optional)
-            element.addEventListener('mousedown', handleMouseDragStart);
-        });
-        
-        function handleDragStart(e) {
+        modalDragHandle.addEventListener('touchstart', (e) => {
             startY = e.touches[0].clientY;
             currentY = startY;
             isDragging = true;
             e.preventDefault();
-        }
+        }, { passive: false });
         
-        function handleMouseDragStart(e) {
-            startY = e.clientY;
-            currentY = startY;
-            isDragging = true;
-            
-            // Add mouse move and up events only when needed
-            window.addEventListener('mousemove', handleMouseDragMove);
-            window.addEventListener('mouseup', handleMouseDragEnd);
-            
-            e.preventDefault();
-        }
-        
-        window.addEventListener('touchmove', handleDragMove, { passive: false });
-        
-        function handleDragMove(e) {
+        window.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
-            
-            // Only process for mobile view
-            if (window.innerWidth >= 768) return;
-            
             currentY = e.touches[0].clientY;
             
             // Calculate how much the modal has been dragged down
@@ -1380,32 +1343,12 @@
             
             // Only move the modal down if dragging down
             if (deltaY > 0) {
-                infoModal.style.transform = `translateX(-50%) translateY(${deltaY}px)`;
+                infoModal.style.transform = `translateY(${deltaY}px)`;
             }
-            
             e.preventDefault();
-        }
+        }, { passive: false });
         
-        function handleMouseDragMove(e) {
-            if (!isDragging) return;
-            
-            // Only process for mobile view
-            if (window.innerWidth >= 768) return;
-            
-            currentY = e.clientY;
-            
-            // Calculate how much the modal has been dragged down
-            const deltaY = currentY - startY;
-            
-            // Only move the modal down if dragging down
-            if (deltaY > 0) {
-                infoModal.style.transform = `translateX(-50%) translateY(${deltaY}px)`;
-            }
-        }
-        
-        window.addEventListener('touchend', handleDragEnd);
-        
-        function handleDragEnd() {
+        window.addEventListener('touchend', () => {
             if (!isDragging) return;
             isDragging = false;
             
@@ -1417,39 +1360,7 @@
                 closeModal();
             } else {
                 // Otherwise, snap back to open position
-                infoModal.style.transform = 'translateX(-50%) translateY(0)';
-            }
-        }
-        
-        function handleMouseDragEnd() {
-            if (!isDragging) return;
-            isDragging = false;
-            
-            // Remove event listeners
-            window.removeEventListener('mousemove', handleMouseDragMove);
-            window.removeEventListener('mouseup', handleMouseDragEnd);
-            
-            // Calculate how much the modal has been dragged down
-            const deltaY = currentY - startY;
-            
-            // If dragged enough, close the modal
-            if (deltaY > 100) {
-                closeModal();
-            } else {
-                // Otherwise, snap back to open position
-                infoModal.style.transform = 'translateX(-50%) translateY(0)';
-            }
-        }
-        
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            // Update modal position based on screen size if the modal is active
-            if (infoModal.classList.contains('active')) {
-                if (window.innerWidth >= 768) {
-                    infoModal.style.transform = 'translate(-50%, -50%) scale(1)';
-                } else {
-                    infoModal.style.transform = 'translateX(-50%) translateY(0)';
-                }
+                infoModal.style.transform = 'translateY(0)';
             }
         });
     </script>
