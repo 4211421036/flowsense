@@ -1129,258 +1129,226 @@
       });
     </script>
     <script>
-        // This code should replace your existing modal script
-        // Add this to your JavaScript file or in a script tag at the end of your HTML
-        
-        // Modal functionality
-        const modalOverlay = document.getElementById('modalOverlay');
-        const infoModal = document.getElementById('infoModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalContent = document.getElementById('modalContent');
-        const modalClose = document.getElementById('modalClose');
-        const modalDragHandle = document.querySelector('.modal-drag-handle');
-        
-        // Chart information content remains the same as in your original code
-        const chartInfo = {
-            pressure1: {
-                title: "Pressure 1 Information",
-                content: `
-                    <p>This chart shows the pressure readings from Sensor 1 in Pascals (Pa).</p>
-                    <p><strong>How to read:</strong></p>
-                    <ul>
-                        <li>The Y-axis shows the pressure value</li>
-                        <li>The X-axis shows the most recent 10 readings</li>
-                        <li>A stable line indicates consistent pressure</li>
-                        <li>Fluctuations may indicate system changes or issues</li>
-                    </ul>
-                    <p><strong>Normal Range:</strong> Typically between 90-110 Pa for this system</p>
-                `
-            },
-            pressure2: {
-                title: "Pressure 2 Information",
-                content: `
-                    <p>This chart shows the pressure readings from Sensor 2 in Pascals (Pa).</p>
-                    <p><strong>How to read:</strong></p>
-                    <ul>
-                        <li>The Y-axis shows the pressure value</li>
-                        <li>The X-axis shows the most recent 10 readings</li>
-                        <li>This sensor should show lower pressure than Sensor 1</li>
-                        <li>Compare with Pressure 1 to see the differential</li>
-                    </ul>
-                    <p><strong>Normal Range:</strong> Typically between 75-85 Pa for this system</p>
-                `
-            },
-            diffPressure: {
-                title: "Differential Pressure Information",
-                content: `
-                    <p>This chart shows the difference between Pressure 1 and Pressure 2.</p>
-                    <p><strong>How to read:</strong></p>
-                    <ul>
-                        <li>Calculated as Pressure 1 minus Pressure 2</li>
-                        <li>Directly relates to flow rate through the Venturi</li>
-                        <li>Larger differences indicate higher flow rates</li>
-                        <li>Sudden drops may indicate blockages</li>
-                    </ul>
-                    <p><strong>Normal Range:</strong> Typically between 15-25 Pa for normal operation</p>
-                `
-            },
-            flowRate: {
-                title: "Flow Rate Information",
-                content: `
-                    <p>This chart shows the calculated flow rate in liters per minute (L/min).</p>
-                    <p><strong>How to read:</strong></p>
-                    <ul>
-                        <li>Calculated from the differential pressure</li>
-                        <li>Follows the square root of the pressure difference</li>
-                        <li>Higher values indicate more fluid moving through</li>
-                        <li>Zero flow shows when system is off</li>
-                    </ul>
-                    <p><strong>Normal Range:</strong> Typically between 2-5 L/min for normal operation</p>
-                `
-            },
-            pressureComp: {
-                title: "Pressure Comparison Information",
-                content: `
-                    <p>This chart compares both pressure sensors simultaneously.</p>
-                    <p><strong>How to read:</strong></p>
-                    <ul>
-                        <li>Blue line shows Pressure 1 (upstream)</li>
-                        <li>Green line shows Pressure 2 (throat)</li>
-                        <li>The gap between lines represents differential pressure</li>
-                        <li>Both should move somewhat in sync</li>
-                    </ul>
-                    <p><strong>Note:</strong> Pressure 2 should always be lower than Pressure 1 in a Venturi system.</p>
-                `
-            },
-            flowGauge: {
-                title: "Flow Rate Gauge Information",
-                content: `
-                    <p>This gauge provides a visual representation of the current flow rate.</p>
-                    <p><strong>How to read:</strong></p>
-                    <ul>
-                        <li>The needle position shows current flow rate</li>
-                        <li>Green indicates normal operating range</li>
-                        <li>Approaching max may indicate high flow conditions</li>
-                        <li>Min and max values are shown below</li>
-                    </ul>
-                    <p><strong>Normal Range:</strong> Typically in the middle range (30-70%) during normal operation</p>
-                `
-            },
-            efficiency: {
-                title: "Venturi Efficiency Information",
-                content: `
-                    <p>This gauge shows the calculated efficiency of the Venturi meter.</p>
-                    <p><strong>How to read:</strong></p>
-                    <ul>
-                        <li>Percentage of pressure recovered after the throat</li>
-                        <li>Higher values indicate better efficiency</li>
-                        <li>Efficiency depends on design and flow conditions</li>
-                        <li>Below 70% may indicate issues</li>
-                    </ul>
-                    <p><strong>Normal Range:</strong> Typically 75-95% for well-designed Venturi meters</p>
-                `
-            },
-            reynolds: {
-                title: "Reynolds Number Information",
-                content: `
-                    <p>This chart shows the Reynolds number, indicating flow regime.</p>
-                    <p><strong>How to read:</strong></p>
-                    <ul>
-                        <li>Below 2000: Laminar flow (smooth)</li>
-                        <li>2000-4000: Transitional flow</li>
-                        <li>Above 4000: Turbulent flow</li>
-                        <li>Venturi meters work best in turbulent flow</li>
-                    </ul>
-                    <p><strong>Note:</strong> Calculated using throat diameter and current flow rate.</p>
-                `
-            },
-            systemStatus: {
-                title: "System Status Information",
-                content: `
-                    <p>This panel displays the health and operational status of the system.</p>
-                    <p><strong>Key information:</strong></p>
-                    <ul>
-                        <li>Sensor status: Shows if sensors are working properly</li>
-                        <li>Device uptime: How long the system has been operating</li>
-                        <li>Last data time: When the last reading was received</li>
-                        <li>Sample count: Total number of readings collected</li>
-                    </ul>
-                    <p><strong>Note:</strong> Any "Alert" status requires immediate attention.</p>
-                `
-            },
-            config: {
-                title: "Configuration Information",
-                content: `
-                    <p>This panel shows the physical specifications of the Venturi meter.</p>
-                    <p><strong>Components:</strong></p>
-                    <ul>
-                        <li>Venturi Type: The specific design variant</li>
-                        <li>Main Pipe Diameter: Width of the main flow section</li>
-                        <li>Throat Diameter: Width at the constricted section</li>
-                        <li>Area Ratio: Ratio of main area to throat area (squared diameter ratio)</li>
-                    </ul>
-                    <p><strong>Note:</strong> These values are used in flow calculations.</p>
-                `
-            }
-        };
-        
-        // Function to show modal info - this was missing in your code
-        function showModalInfo(chartType) {
-            const info = chartInfo[chartType];
-            if (!info) return;
-            
-            modalTitle.textContent = info.title;
-            modalContent.innerHTML = info.content;
-            
-            // Show elements before activating
-            modalOverlay.style.display = 'block';
-            infoModal.style.display = 'flex';
-            
-            // Force reflow before adding active class
-            void modalOverlay.offsetWidth;
-            void infoModal.offsetWidth;
-            
-            modalOverlay.classList.add('active');
-            infoModal.classList.add('active');
-            
-            // Update ARIA attributes
-            document.querySelector(`button[onclick="showModalInfo('${chartType}')"]`).setAttribute('aria-expanded', 'true');
-            
-            // Prevent body scrolling when modal is open
-            document.body.style.overflow = 'hidden';
+         // Modal functionality
+    const modalOverlay = document.getElementById('modalOverlay');
+    const infoModal = document.getElementById('infoModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const modalClose = document.getElementById('modalClose');
+    const modalDragHandle = document.querySelector('.modal-drag-handle');
+    
+    // Chart information content
+    const chartInfo = {
+        pressure1: {
+            title: "Pressure 1 Information",
+            content: `
+                <p>This chart shows the pressure readings from Sensor 1 in Pascals (Pa).</p>
+                <p><strong>How to read:</strong></p>
+                <ul>
+                    <li>The Y-axis shows the pressure value</li>
+                    <li>The X-axis shows the most recent 10 readings</li>
+                    <li>A stable line indicates consistent pressure</li>
+                    <li>Fluctuations may indicate system changes or issues</li>
+                </ul>
+                <p><strong>Normal Range:</strong> Typically between 90-110 Pa for this system</p>
+            `
+        },
+        pressure2: {
+            title: "Pressure 2 Information",
+            content: `
+                <p>This chart shows the pressure readings from Sensor 2 in Pascals (Pa).</p>
+                <p><strong>How to read:</strong></p>
+                <ul>
+                    <li>The Y-axis shows the pressure value</li>
+                    <li>The X-axis shows the most recent 10 readings</li>
+                    <li>This sensor should show lower pressure than Sensor 1</li>
+                    <li>Compare with Pressure 1 to see the differential</li>
+                </ul>
+                <p><strong>Normal Range:</strong> Typically between 75-85 Pa for this system</p>
+            `
+        },
+        diffPressure: {
+            title: "Differential Pressure Information",
+            content: `
+                <p>This chart shows the difference between Pressure 1 and Pressure 2.</p>
+                <p><strong>How to read:</strong></p>
+                <ul>
+                    <li>Calculated as Pressure 1 minus Pressure 2</li>
+                    <li>Directly relates to flow rate through the Venturi</li>
+                    <li>Larger differences indicate higher flow rates</li>
+                    <li>Sudden drops may indicate blockages</li>
+                </ul>
+                <p><strong>Normal Range:</strong> Typically between 15-25 Pa for normal operation</p>
+            `
+        },
+        flowRate: {
+            title: "Flow Rate Information",
+            content: `
+                <p>This chart shows the calculated flow rate in liters per minute (L/min).</p>
+                <p><strong>How to read:</strong></p>
+                <ul>
+                    <li>Calculated from the differential pressure</li>
+                    <li>Follows the square root of the pressure difference</li>
+                    <li>Higher values indicate more fluid moving through</li>
+                    <li>Zero flow shows when system is off</li>
+                </ul>
+                <p><strong>Normal Range:</strong> Typically between 2-5 L/min for normal operation</p>
+            `
+        },
+        pressureComp: {
+            title: "Pressure Comparison Information",
+            content: `
+                <p>This chart compares both pressure sensors simultaneously.</p>
+                <p><strong>How to read:</strong></p>
+                <ul>
+                    <li>Blue line shows Pressure 1 (upstream)</li>
+                    <li>Green line shows Pressure 2 (throat)</li>
+                    <li>The gap between lines represents differential pressure</li>
+                    <li>Both should move somewhat in sync</li>
+                </ul>
+                <p><strong>Note:</strong> Pressure 2 should always be lower than Pressure 1 in a Venturi system.</p>
+            `
+        },
+        flowGauge: {
+            title: "Flow Rate Gauge Information",
+            content: `
+                <p>This gauge provides a visual representation of the current flow rate.</p>
+                <p><strong>How to read:</strong></p>
+                <ul>
+                    <li>The needle position shows current flow rate</li>
+                    <li>Green indicates normal operating range</li>
+                    <li>Approaching max may indicate high flow conditions</li>
+                    <li>Min and max values are shown below</li>
+                </ul>
+                <p><strong>Normal Range:</strong> Typically in the middle range (30-70%) during normal operation</p>
+            `
+        },
+        efficiency: {
+            title: "Venturi Efficiency Information",
+            content: `
+                <p>This gauge shows the calculated efficiency of the Venturi meter.</p>
+                <p><strong>How to read:</strong></p>
+                <ul>
+                    <li>Percentage of pressure recovered after the throat</li>
+                    <li>Higher values indicate better efficiency</li>
+                    <li>Efficiency depends on design and flow conditions</li>
+                    <li>Below 70% may indicate issues</li>
+                </ul>
+                <p><strong>Normal Range:</strong> Typically 75-95% for well-designed Venturi meters</p>
+            `
+        },
+        reynolds: {
+            title: "Reynolds Number Information",
+            content: `
+                <p>This chart shows the Reynolds number, indicating flow regime.</p>
+                <p><strong>How to read:</strong></p>
+                <ul>
+                    <li>Below 2000: Laminar flow (smooth)</li>
+                    <li>2000-4000: Transitional flow</li>
+                    <li>Above 4000: Turbulent flow</li>
+                    <li>Venturi meters work best in turbulent flow</li>
+                </ul>
+                <p><strong>Note:</strong> Calculated using throat diameter and current flow rate.</p>
+            `
+        }
+    };
+    
+    // Add info buttons to each card
+    document.querySelectorAll('.card').forEach(card => {
+        // Skip system status and configuration cards
+        if (!card.querySelector('.chart-container') && !card.querySelector('.chart-dual') && !card.querySelector('.gauge-container')) {
+            return;
         }
         
-        // Close modal
-        function closeModal() {
-            // Find the currently expanded button and update its ARIA attribute
-            const expandedButton = document.querySelector('button[aria-expanded="true"]');
-            if (expandedButton) {
-                expandedButton.setAttribute('aria-expanded', 'false');
-            }
-            
-            modalOverlay.classList.remove('active');
-            infoModal.classList.remove('active');
-            
-            // Wait for transition to complete before hiding
-            setTimeout(() => {
-                modalOverlay.style.display = 'none';
-                infoModal.style.display = 'none';
-                document.body.style.overflow = '';
-            }, 300);
+        const cardTitle = card.querySelector('.card-title').textContent;
+        let chartType = '';
+        
+        if (cardTitle.includes('Pressure 1')) chartType = 'pressure1';
+        else if (cardTitle.includes('Pressure 2')) chartType = 'pressure2';
+        else if (cardTitle.includes('Differential')) chartType = 'diffPressure';
+        else if (cardTitle.includes('Flow Rate') && !cardTitle.includes('Gauge')) chartType = 'flowRate';
+        else if (cardTitle.includes('Comparison')) chartType = 'pressureComp';
+        else if (cardTitle.includes('Gauge')) chartType = 'flowGauge';
+        else if (cardTitle.includes('Efficiency')) chartType = 'efficiency';
+        else if (cardTitle.includes('Reynolds')) chartType = 'reynolds';
+        
+        if (chartType) {
+            const infoButton = document.createElement('button');
+            infoButton.className = 'card-info-button';
+            infoButton.innerHTML = 'i';
+            infoButton.addEventListener('click', () => openModal(chartType));
+            card.style.position = 'relative';
+            card.appendChild(infoButton);
         }
+    });
+    
+    // Open modal with specific content
+    function openModal(chartType) {
+        const info = chartInfo[chartType];
+        if (!info) return;
         
-        // Event listeners
-        modalOverlay.addEventListener('click', closeModal);
-        modalClose.addEventListener('click', closeModal);
+        modalTitle.textContent = info.title;
+        modalContent.innerHTML = info.content;
         
-        // Improved swipe to close functionality for mobile
-        let startY = 0;
-        let currentY = 0;
-        let isDragging = false;
+        modalOverlay.classList.add('active');
+        infoModal.classList.add('active');
         
-        // Initialize drag position when touch starts
-        modalDragHandle.addEventListener('touchstart', (e) => {
-            startY = e.touches[0].clientY;
-            currentY = startY;
-            isDragging = true;
-            infoModal.style.transition = 'none'; // Disable transitions during drag
-        }, { passive: true });
+        // Prevent body scrolling when modal is open
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Close modal
+    function closeModal() {
+        modalOverlay.classList.remove('active');
+        infoModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    // Event listeners
+    modalOverlay.addEventListener('click', closeModal);
+    modalClose.addEventListener('click', closeModal);
+    
+    // Swipe to close functionality for mobile
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+    
+    modalDragHandle.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        currentY = startY;
+        isDragging = true;
+        e.preventDefault();
+    }, { passive: false });
+    
+    window.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        currentY = e.touches[0].clientY;
         
-        // Handle the dragging motion
-        document.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            
-            currentY = e.touches[0].clientY;
-            const deltaY = currentY - startY;
-            
-            // Only allow dragging downward
-            if (deltaY > 0) {
-                infoModal.style.transform = `translateY(${deltaY}px)`;
-                e.preventDefault(); // Prevent page scrolling while dragging
-            }
-        }, { passive: false });
+        // Calculate how much the modal has been dragged down
+        const deltaY = currentY - startY;
         
-        // Handle the touch end - either close or snap back
-        document.addEventListener('touchend', () => {
-            if (!isDragging) return;
-            isDragging = false;
-            
-            const deltaY = currentY - startY;
-            infoModal.style.transition = 'transform 0.3s ease-out'; // Re-enable transition
-            
-            // If dragged more than 100px down, close the modal
-            if (deltaY > 100) {
-                closeModal();
-            } else {
-                // Otherwise snap back to original position
-                infoModal.style.transform = '';
-            }
-        }, { passive: true });
+        // Only move the modal down if dragging down
+        if (deltaY > 0) {
+            infoModal.style.transform = `translate(-50%, ${deltaY}px)`;
+        }
+        e.preventDefault();
+    }, { passive: false });
+    
+    window.addEventListener('touchend', () => {
+        if (!isDragging) return;
+        isDragging = false;
         
-        // Initialize event listeners when the document is ready
-        document.addEventListener('DOMContentLoaded', () => {
-            // You can put any initialization code here if needed
-        });
+        // Calculate how much the modal has been dragged down
+        const deltaY = currentY - startY;
+        
+        // If dragged enough, close the modal
+        if (deltaY > 100) {
+            closeModal();
+        } else {
+            // Otherwise, snap back to open position
+            infoModal.style.transform = 'translate(-50%, 0)';
+        }
+    });
     </script>
 </body>
 </html>
