@@ -1,17 +1,1 @@
-{
-  "config": {
-    "venturiType": "DOUBLE_PIPE",
-    "mainDiameter": 20.0,
-    "throatDiameter": 10.0
-  },
-  "uptime": 120,
-  "readings": [
-    {
-      "timestamp": 123456789,
-      "pressure1": 101.2,
-      "pressure2": 79.9,
-      "pressureDiff": 21.3,
-      "flowRate": 3.68
-    }
-  ]
-}
+{"config":{"venturiType":"DOUBLE_PIPE","mainDiameter":20,"throatDiameter":10},"uptime":5,"readings":[{"timestamp":292,"pressure1":15625,"pressure2":15625,"pressureDiff":0,"flowRate":0},{"timestamp":293,"pressure1":15625,"pressure2":15625,"pressureDiff":0,"flowRate":0},{"timestamp":294,"pressure1":15625,"pressure2":15625,"pressureDiff":0,"flowRate":0},{"timestamp":295,"pressure1":15625,"pressure2":15625,"pressureDiff":0,"flowRate":0},{"timestamp":296,"pressure1":15625,"pressure2":15625,"pressureDiff":0,"flowRate":0},{"timestamp":297,"pressure1":15625,"pressure2":15625,"pressureDiff":0,"flowRate":0},{"timestamp":298,"pressure1":15625,"pressure2":15625,"pressureDiff":0,"flowRate":0},{"timestamp":299,"pressure1":15625,"pressure2":15625,"pressureDiff":0,"flowRate":0},{"timestamp":300,"pressure1":15625,"pressure2":15625,"pressureDiff":0,"flowRate":0},{"timestamp":291,"pressure1":15625,"pressure2":15625,"pressureDiff":0,"flowRate":0}]}
