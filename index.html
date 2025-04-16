@@ -678,10 +678,16 @@
         }
         
         .modals-body p {
-            font-size: 14px;
-            color: #9DA3B4;
-            line-height: 1.5;
-        }
+           font-size: 14px;
+           color: #9DA3B4;
+           line-height: 1.5;
+       
+           display: -webkit-box;
+           -webkit-line-clamp: 2; /* jumlah baris */
+           -webkit-box-orient: vertical;
+           overflow: hidden;
+           text-overflow: ellipsis;
+       }
         
         .modals-footer {
             padding: 12px 16px;
@@ -1465,25 +1471,23 @@
     <script>
         // Tampilkan modal secara otomatis ketika halaman dimuat
         document.addEventListener('DOMContentLoaded', function() {
-            // Tunggu sebentar sebelum menampilkan modal
             setTimeout(function() {
                 document.getElementById('installModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
             }, 1000);
         });
         
-        // Tombol Batal untuk menutup modal
         document.getElementById('cancelBtn').addEventListener('click', function() {
             document.getElementById('installModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
         });
         
-        // Tombol Instal
         document.getElementById('installBtn').addEventListener('click', function() {
             alert('Memulai proses instalasi aplikasi...');
             document.getElementById('installModal').classList.add('hidden');
-            
-            // Di sini Anda dapat menambahkan kode untuk menangani proses instalasi PWA
-            // jika aplikasi Anda adalah Progressive Web App
+            document.body.style.overflow = 'auto';
         });
+
         
         // Jika ingin mengintegrasikan dengan Service Worker dari kode yang Anda berikan
         if ('serviceWorker' in navigator) {
