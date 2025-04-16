@@ -1266,20 +1266,6 @@
         
         // Wait for the DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function () {
-            const skipLink = document.getElementById('skip-link');
-            const mainContent = document.getElementById('main-content');
-            
-            if (skipLink && mainContent) {
-                skipLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    mainContent.setAttribute('tabindex', '-1');
-                    mainContent.focus();
-                });
-
-                mainContent.addEventListener('blur', function() {
-                    mainContent.removeAttribute('tabindex');
-                });
-            }
             // Add info buttons to each card
             document.querySelectorAll('.card').forEach(card => {
                 // Skip system status and configuration cards
