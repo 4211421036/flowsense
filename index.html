@@ -1129,6 +1129,9 @@
       });
     </script>
     <script>
+        // This code should replace your existing modal script
+        // Add this to your JavaScript file or in a script tag at the end of your HTML
+        
         // Modal functionality
         const modalOverlay = document.getElementById('modalOverlay');
         const infoModal = document.getElementById('infoModal');
@@ -1137,7 +1140,7 @@
         const modalClose = document.getElementById('modalClose');
         const modalDragHandle = document.querySelector('.modal-drag-handle');
         
-        // Chart information content
+        // Chart information content remains the same as in your original code
         const chartInfo = {
             pressure1: {
                 title: "Pressure 1 Information",
@@ -1250,40 +1253,39 @@
                     </ul>
                     <p><strong>Note:</strong> Calculated using throat diameter and current flow rate.</p>
                 `
+            },
+            systemStatus: {
+                title: "System Status Information",
+                content: `
+                    <p>This panel displays the health and operational status of the system.</p>
+                    <p><strong>Key information:</strong></p>
+                    <ul>
+                        <li>Sensor status: Shows if sensors are working properly</li>
+                        <li>Device uptime: How long the system has been operating</li>
+                        <li>Last data time: When the last reading was received</li>
+                        <li>Sample count: Total number of readings collected</li>
+                    </ul>
+                    <p><strong>Note:</strong> Any "Alert" status requires immediate attention.</p>
+                `
+            },
+            config: {
+                title: "Configuration Information",
+                content: `
+                    <p>This panel shows the physical specifications of the Venturi meter.</p>
+                    <p><strong>Components:</strong></p>
+                    <ul>
+                        <li>Venturi Type: The specific design variant</li>
+                        <li>Main Pipe Diameter: Width of the main flow section</li>
+                        <li>Throat Diameter: Width at the constricted section</li>
+                        <li>Area Ratio: Ratio of main area to throat area (squared diameter ratio)</li>
+                    </ul>
+                    <p><strong>Note:</strong> These values are used in flow calculations.</p>
+                `
             }
         };
         
-        // Add info buttons to each card
-        document.querySelectorAll('.card').forEach(card => {
-            // Skip system status and configuration cards
-            if (!card.querySelector('.chart-container') && !card.querySelector('.chart-dual') && !card.querySelector('.gauge-container')) {
-                return;
-            }
-            
-            const cardTitle = card.querySelector('.card-title').textContent;
-            let chartType = '';
-            
-            if (cardTitle.includes('Pressure 1')) chartType = 'pressure1';
-            else if (cardTitle.includes('Pressure 2')) chartType = 'pressure2';
-            else if (cardTitle.includes('Differential')) chartType = 'diffPressure';
-            else if (cardTitle.includes('Flow Rate') && !cardTitle.includes('Gauge')) chartType = 'flowRate';
-            else if (cardTitle.includes('Comparison')) chartType = 'pressureComp';
-            else if (cardTitle.includes('Gauge')) chartType = 'flowGauge';
-            else if (cardTitle.includes('Efficiency')) chartType = 'efficiency';
-            else if (cardTitle.includes('Reynolds')) chartType = 'reynolds';
-            
-            if (chartType) {
-                const infoButton = document.createElement('button');
-                infoButton.className = 'card-info-button';
-                infoButton.innerHTML = 'i';
-                infoButton.addEventListener('click', () => openModal(chartType));
-                card.style.position = 'relative';
-                card.appendChild(infoButton);
-            }
-        });
-        
-        // Open modal with specific content
-        function openModal(chartType) {
+        // Function to show modal info - this was missing in your code
+        function showModalInfo(chartType) {
             const info = chartInfo[chartType];
             if (!info) return;
             
@@ -1301,12 +1303,21 @@
             modalOverlay.classList.add('active');
             infoModal.classList.add('active');
             
+            // Update ARIA attributes
+            document.querySelector(`button[onclick="showModalInfo('${chartType}')"]`).setAttribute('aria-expanded', 'true');
+            
             // Prevent body scrolling when modal is open
             document.body.style.overflow = 'hidden';
         }
         
         // Close modal
         function closeModal() {
+            // Find the currently expanded button and update its ARIA attribute
+            const expandedButton = document.querySelector('button[aria-expanded="true"]');
+            if (expandedButton) {
+                expandedButton.setAttribute('aria-expanded', 'false');
+            }
+            
             modalOverlay.classList.remove('active');
             infoModal.classList.remove('active');
             
@@ -1322,46 +1333,53 @@
         modalOverlay.addEventListener('click', closeModal);
         modalClose.addEventListener('click', closeModal);
         
-        // Swipe to close functionality for mobile
+        // Improved swipe to close functionality for mobile
         let startY = 0;
         let currentY = 0;
         let isDragging = false;
         
+        // Initialize drag position when touch starts
         modalDragHandle.addEventListener('touchstart', (e) => {
             startY = e.touches[0].clientY;
             currentY = startY;
             isDragging = true;
-            e.preventDefault();
-        }, { passive: false });
+            infoModal.style.transition = 'none'; // Disable transitions during drag
+        }, { passive: true });
         
-        window.addEventListener('touchmove', (e) => {
+        // Handle the dragging motion
+        document.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
-            currentY = e.touches[0].clientY;
             
-            // Calculate how much the modal has been dragged down
+            currentY = e.touches[0].clientY;
             const deltaY = currentY - startY;
             
-            // Only move the modal down if dragging down
+            // Only allow dragging downward
             if (deltaY > 0) {
                 infoModal.style.transform = `translateY(${deltaY}px)`;
+                e.preventDefault(); // Prevent page scrolling while dragging
             }
-            e.preventDefault();
         }, { passive: false });
         
-        window.addEventListener('touchend', () => {
+        // Handle the touch end - either close or snap back
+        document.addEventListener('touchend', () => {
             if (!isDragging) return;
             isDragging = false;
             
-            // Calculate how much the modal has been dragged down
             const deltaY = currentY - startY;
+            infoModal.style.transition = 'transform 0.3s ease-out'; // Re-enable transition
             
-            // If dragged enough, close the modal
+            // If dragged more than 100px down, close the modal
             if (deltaY > 100) {
                 closeModal();
             } else {
-                // Otherwise, snap back to open position
-                infoModal.style.transform = 'translateY(0)';
+                // Otherwise snap back to original position
+                infoModal.style.transform = '';
             }
+        }, { passive: true });
+        
+        // Initialize event listeners when the document is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            // You can put any initialization code here if needed
         });
     </script>
 </body>
