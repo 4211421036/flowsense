@@ -1269,11 +1269,13 @@
     function closeModal() {
         modalOverlay.classList.remove('active');
         infoModal.classList.remove('active');
+        infoModal.style.transform = 'translateY(0)';
         
         // Wait for transition to complete before hiding
         setTimeout(() => {
             modalOverlay.style.display = 'none';
             infoModal.style.display = 'none';
+            infoModal.style.transform = 'translateY(0)';
             document.body.style.overflow = '';
         }, 300);
     }
@@ -1318,6 +1320,7 @@
         // If dragged enough, close the modal
         if (deltaY > 100) {
             closeModal();
+            infoModal.style.transform = 'translateY(0)';
         } else {
             // Otherwise, snap back to open position
             infoModal.style.transform = 'translateY(0)';
