@@ -416,194 +416,222 @@
     </style>
 </head>
 <body>
-    <header>
+    <header role="banner">
         <div class="header-title">
             <h1>Venturi Meter Monitoring</h1>
-            <div class="last-update" id="lastUpdate">12:09 PM</div>
+            <div class="last-update" id="lastUpdate" aria-live="polite">12:09 PM</div>
         </div>
-        <button class="refresh-button" onclick="fetchData()">
-            <span id="refreshIcon">↻</span> Refresh
+        <button class="refresh-button" onclick="fetchData()" aria-label="Refresh data">
+            <span id="refreshIcon" aria-hidden="true">↻</span> Refresh
         </button>
     </header>
 
-    <div class="dashboard">
-        <!-- Pressure 1 Card -->
-        <div class="card">
-            <div class="card-title">Pressure 1</div>
-            <div class="card-value"><span id="pressure1Value">0.00</span><span class="card-unit">Pa</span></div>
-            <div class="chart-container">
-                <canvas id="pressure1Chart"></canvas>
-            </div>
-            <div class="card-status">
-                <div class="status-indicator normal" id="pressure1Status"></div>
-                <div class="status-text" id="pressure1StatusText">Stable</div>
-            </div>
-        </div>
-
-        <!-- Pressure 2 Card -->
-        <div class="card">
-            <div class="card-title">Pressure 2</div>
-            <div class="card-value"><span id="pressure2Value">0.00</span><span class="card-unit">Pa</span></div>
-            <div class="chart-container">
-                <canvas id="pressure2Chart"></canvas>
-            </div>
-            <div class="card-status">
-                <div class="status-indicator normal" id="pressure2Status"></div>
-                <div class="status-text" id="pressure2StatusText">Stable</div>
-            </div>
-        </div>
-
-        <!-- Differential Pressure Card -->
-        <div class="card">
-            <div class="card-title">Differential Pressure</div>
-            <div class="card-value"><span id="diffPressureValue">0.00</span><span class="card-unit">Pa</span></div>
-            <div class="chart-container">
-                <canvas id="diffPressureChart"></canvas>
-            </div>
-            <div class="card-status">
-                <div class="status-indicator info" id="diffStatus"></div>
-                <div class="status-text" id="diffStatusText">Normal differential</div>
-            </div>
-        </div>
-
-        <!-- Flow Rate Card -->
-        <div class="card">
-            <div class="card-title">Flow Rate</div>
-            <div class="card-value"><span id="flowRateValue">0.00</span><span class="card-unit">L/min</span></div>
-            <div class="chart-container">
-                <canvas id="flowRateChart"></canvas>
-            </div>
-            <div class="card-status">
-                <div class="status-indicator normal" id="flowStatus"></div>
-                <div class="status-text" id="flowStatusText">Normal flow</div>
-            </div>
-        </div>
-
-        <!-- Pressure Comparison -->
-        <div class="card">
-            <div class="card-title">Pressure Comparison</div>
-            <div class="dual-value">
-                <div class="value-block">
-                    <div class="sensor-label">Sensor 1</div>
-                    <div class="sensor-value"><span id="compPressure1">0.00</span><span class="value-unit">Pa</span></div>
+    <main id="main-content" role="main">
+        <div class="dashboard">
+            <!-- Pressure 1 Card -->
+            <section class="card" aria-labelledby="pressure1-title">
+                <h2 class="card-title" id="pressure1-title">Pressure 1</h2>
+                <div class="card-value">
+                    <span id="pressure1Value" aria-live="polite">0.00</span>
+                    <span class="card-unit">Pa</span>
                 </div>
-                <div class="value-block">
-                    <div class="sensor-label">Sensor 2</div>
-                    <div class="sensor-value"><span id="compPressure2">0.00</span><span class="value-unit">Pa</span></div>
+                <div class="chart-container">
+                    <canvas id="pressure1Chart" aria-label="Pressure 1 over time chart" role="img"></canvas>
                 </div>
-            </div>
-            <div class="chart-dual">
-                <canvas id="pressureCompChart"></canvas>
-            </div>
-            <div class="dominant-factor">
-                Difference: <span class="diff-value" id="pressureDiffText">0.00 Pa</span>
-            </div>
-        </div>
-
-        <!-- Flow Rate Gauge -->
-        <div class="card">
-            <div class="card-title">Flow Rate Gauge</div>
-            <div class="gauge-container">
-                <canvas id="flowGauge"></canvas>
-                <div class="gauge-center">
-                    <div class="gauge-value" id="gaugeFlowValue">0.00</div>
-                    <div class="gauge-label">L/min</div>
+                <div class="card-status">
+                    <div class="status-indicator normal" id="pressure1Status" aria-hidden="true"></div>
+                    <div class="status-text" id="pressure1StatusText" aria-live="polite">Stable</div>
                 </div>
-            </div>
-            <div class="info-row">
-                <span>Min: <span id="minFlow">0.00</span> L/min</span>
-                <span>Max: <span id="maxFlow">10.00</span> L/min</span>
-            </div>
-        </div>
+            </section>
 
-        <!-- Efficiency Card -->
-        <div class="card">
-            <div class="card-title">Venturi Efficiency</div>
-            <div class="gauge-container">
-                <canvas id="efficiencyGauge"></canvas>
-                <div class="gauge-center">
-                    <div class="gauge-value" id="efficiencyValue">0</div>
-                    <div class="gauge-label">%</div>
+            <!-- Pressure 2 Card -->
+            <section class="card" aria-labelledby="pressure2-title">
+                <h2 class="card-title" id="pressure2-title">Pressure 2</h2>
+                <div class="card-value">
+                    <span id="pressure2Value" aria-live="polite">0.00</span>
+                    <span class="card-unit">Pa</span>
                 </div>
-            </div>
-            <div class="info-row">
-                <span>Calculated from pressure recovery</span>
-            </div>
-        </div>
-
-        <!-- Reynolds Number -->
-        <div class="card">
-            <div class="card-title">Reynolds Number</div>
-            <div class="card-value"><span id="reynoldsValue">0</span></div>
-            <div class="chart-container">
-                <canvas id="reynoldsChart"></canvas>
-            </div>
-            <div class="card-status">
-                <div class="status-indicator info" id="flowTypeStatus"></div>
-                <div class="status-text" id="flowTypeText">Laminar Flow</div>
-            </div>
-        </div>
-
-        <!-- System Status -->
-        <div class="card">
-            <div class="card-title">System Status</div>
-            <div class="dual-value">
-                <div class="value-block">
-                    <div class="sensor-label">Sensor 1</div>
-                    <div class="sensor-value"><span id="sensor1Status">OK</span></div>
+                <div class="chart-container">
+                    <canvas id="pressure2Chart" aria-label="Pressure 2 over time chart" role="img"></canvas>
                 </div>
-                <div class="value-block">
-                    <div class="sensor-label">Sensor 2</div>
-                    <div class="sensor-value"><span id="sensor2Status">OK</span></div>
+                <div class="card-status">
+                    <div class="status-indicator normal" id="pressure2Status" aria-hidden="true"></div>
+                    <div class="status-text" id="pressure2StatusText" aria-live="polite">Stable</div>
                 </div>
-            </div>
-            <div class="info-row" style="margin-top: 20px;">
-                <span>Device Uptime: <span id="uptime">0</span> minutes</span>
-            </div>
-            <div class="info-row">
-                <span>Last Data: <span id="lastDataTime">N/A</span></span>
-            </div>
-            <div class="info-row">
-                <span>Samples: <span id="sampleCount">0</span></span>
-            </div>
-        </div>
+            </section>
 
-        <!-- Configuration Info -->
-        <div class="card">
-            <div class="card-title">Configuration</div>
-            <div class="info-row">
-                <span>Venturi Type:</span>
-                <span id="venturiType">DOUBLE_PIPE</span>
-            </div>
-            <div class="info-row">
-                <span>Main Pipe Diameter:</span>
-                <span id="mainDiameter">20.0 mm</span>
-            </div>
-            <div class="info-row">
-                <span>Throat Diameter:</span>
-                <span id="throatDiameter">10.0 mm</span>
-            </div>
-            <div class="info-row">
-                <span>Area Ratio:</span>
-                <span class="ratio-value" id="areaRatio">4.00</span>
-            </div>
-        </div>
-    </div>
-    <div class="modal-overlay" id="modalOverlay"></div>
+            <!-- Differential Pressure Card -->
+            <section class="card" aria-labelledby="diffPressure-title">
+                <h2 class="card-title" id="diffPressure-title">Differential Pressure</h2>
+                <div class="card-value">
+                    <span id="diffPressureValue" aria-live="polite">0.00</span>
+                    <span class="card-unit">Pa</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="diffPressureChart" aria-label="Differential pressure over time chart" role="img"></canvas>
+                </div>
+                <div class="card-status">
+                    <div class="status-indicator info" id="diffStatus" aria-hidden="true"></div>
+                    <div class="status-text" id="diffStatusText" aria-live="polite">Normal differential</div>
+                </div>
+            </section>
 
-    <div class="modal" id="infoModal">
+            <!-- Flow Rate Card -->
+            <section class="card" aria-labelledby="flowRate-title">
+                <h2 class="card-title" id="flowRate-title">Flow Rate</h2>
+                <div class="card-value">
+                    <span id="flowRateValue" aria-live="polite">0.00</span>
+                    <span class="card-unit">L/min</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="flowRateChart" aria-label="Flow rate over time chart" role="img"></canvas>
+                </div>
+                <div class="card-status">
+                    <div class="status-indicator normal" id="flowStatus" aria-hidden="true"></div>
+                    <div class="status-text" id="flowStatusText" aria-live="polite">Normal flow</div>
+                </div>
+            </section>
+
+            <!-- Pressure Comparison -->
+            <section class="card" aria-labelledby="pressureComp-title">
+                <h2 class="card-title" id="pressureComp-title">Pressure Comparison</h2>
+                <div class="dual-value">
+                    <div class="value-block">
+                        <h3 class="sensor-label">Sensor 1</h3>
+                        <div class="sensor-value">
+                            <span id="compPressure1" aria-live="polite">0.00</span>
+                            <span class="value-unit">Pa</span>
+                        </div>
+                    </div>
+                    <div class="value-block">
+                        <h3 class="sensor-label">Sensor 2</h3>
+                        <div class="sensor-value">
+                            <span id="compPressure2" aria-live="polite">0.00</span>
+                            <span class="value-unit">Pa</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-dual">
+                    <canvas id="pressureCompChart" aria-label="Pressure comparison chart" role="img"></canvas>
+                </div>
+                <div class="dominant-factor">
+                    Difference: <span class="diff-value" id="pressureDiffText" aria-live="polite">0.00 Pa</span>
+                </div>
+            </section>
+
+            <!-- Flow Rate Gauge -->
+            <section class="card" aria-labelledby="flowGauge-title">
+                <h2 class="card-title" id="flowGauge-title">Flow Rate Gauge</h2>
+                <div class="gauge-container">
+                    <canvas id="flowGauge" aria-label="Flow rate gauge visualization" role="img"></canvas>
+                    <div class="gauge-center">
+                        <div class="gauge-value" id="gaugeFlowValue" aria-live="polite">0.00</div>
+                        <div class="gauge-label">L/min</div>
+                    </div>
+                </div>
+                <div class="info-row">
+                    <span>Min: <span id="minFlow" aria-live="polite">0.00</span> L/min</span>
+                    <span>Max: <span id="maxFlow" aria-live="polite">10.00</span> L/min</span>
+                </div>
+            </section>
+
+            <!-- Efficiency Card -->
+            <section class="card" aria-labelledby="efficiency-title">
+                <h2 class="card-title" id="efficiency-title">Venturi Efficiency</h2>
+                <div class="gauge-container">
+                    <canvas id="efficiencyGauge" aria-label="Venturi efficiency gauge visualization" role="img"></canvas>
+                    <div class="gauge-center">
+                        <div class="gauge-value" id="efficiencyValue" aria-live="polite">0</div>
+                        <div class="gauge-label">%</div>
+                    </div>
+                </div>
+                <div class="info-row">
+                    <span>Calculated from pressure recovery</span>
+                </div>
+            </section>
+
+            <!-- Reynolds Number -->
+            <section class="card" aria-labelledby="reynolds-title">
+                <h2 class="card-title" id="reynolds-title">Reynolds Number</h2>
+                <div class="card-value">
+                    <span id="reynoldsValue" aria-live="polite">0</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="reynoldsChart" aria-label="Reynolds number over time chart" role="img"></canvas>
+                </div>
+                <div class="card-status">
+                    <div class="status-indicator info" id="flowTypeStatus" aria-hidden="true"></div>
+                    <div class="status-text" id="flowTypeText" aria-live="polite">Laminar Flow</div>
+                </div>
+            </section>
+
+            <!-- System Status -->
+            <section class="card" aria-labelledby="systemStatus-title">
+                <h2 class="card-title" id="systemStatus-title">System Status</h2>
+                <div class="dual-value">
+                    <div class="value-block">
+                        <h3 class="sensor-label">Sensor 1</h3>
+                        <div class="sensor-value">
+                            <span id="sensor1Status" aria-live="polite">OK</span>
+                        </div>
+                    </div>
+                    <div class="value-block">
+                        <h3 class="sensor-label">Sensor 2</h3>
+                        <div class="sensor-value">
+                            <span id="sensor2Status" aria-live="polite">OK</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-row" style="margin-top: 20px;">
+                    <span>Device Uptime: <span id="uptime" aria-live="polite">0</span> minutes</span>
+                </div>
+                <div class="info-row">
+                    <span>Last Data: <span id="lastDataTime" aria-live="polite">N/A</span></span>
+                </div>
+                <div class="info-row">
+                    <span>Samples: <span id="sampleCount" aria-live="polite">0</span></span>
+                </div>
+            </section>
+
+            <!-- Configuration Info -->
+            <section class="card" aria-labelledby="config-title">
+                <h2 class="card-title" id="config-title">Configuration</h2>
+                <dl class="info-row">
+                    <dt>Venturi Type:</dt>
+                    <dd id="venturiType">DOUBLE_PIPE</dd>
+                </dl>
+                <dl class="info-row">
+                    <dt>Main Pipe Diameter:</dt>
+                    <dd id="mainDiameter">20.0 mm</dd>
+                </dl>
+                <dl class="info-row">
+                    <dt>Throat Diameter:</dt>
+                    <dd id="throatDiameter">10.0 mm</dd>
+                </dl>
+                <dl class="info-row">
+                    <dt>Area Ratio:</dt>
+                    <dd class="ratio-value" id="areaRatio">4.00</dd>
+                </dl>
+            </section>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalOverlay" role="dialog" aria-hidden="true"></div>
+
+    <div class="modal" id="infoModal" role="dialog" aria-labelledby="modalTitle" aria-modal="true" aria-hidden="true">
         <div class="modal-header">
             <h3 class="modal-title" id="modalTitle">Chart Information</h3>
-            <button class="modal-close" id="modalClose">&times;</button>
+            <button class="modal-close" id="modalClose" aria-label="Close dialog">&times;</button>
         </div>
         <div class="modal-content" id="modalContent">
+            <!-- Modal content will be inserted here -->
         </div>
-        <div class="modal-drag-handle"></div>
+        <div class="modal-drag-handle" aria-hidden="true"></div>
     </div>
 
-    <div class="footer-info">
-        <p>Venturi Meter Monitoring System | Last Updated: <span id="footerLastUpdate">12:09 PM</span></p>
-    </div>
+    <footer role="contentinfo" class="footer-info">
+        <p>Venturi Meter Monitoring System | Last Updated: <span id="footerLastUpdate" aria-live="polite">12:09 PM</span></p>
+    </footer>
 
     <script>
         // Initialize charts with empty data
