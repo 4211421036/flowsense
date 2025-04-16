@@ -514,6 +514,25 @@
             outline: 3px solid #0056b3;
             outline-offset: 2px;
         }
+
+      #loadingProgress {
+        position: sticky;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        height: 3px;
+        width: 0%;
+        background-color: #65D8E4;
+        transition: width 0.3s ease;
+    }
+    
+    #loadingProgress[aria-busy="true"] {
+        width: 80%; /* Show partial progress when busy */
+    }
+    
+    #loadingProgress[aria-busy="false"] {
+        transition: width 0.5s ease;
+    }
      </style>
  </head>
  <body>
@@ -522,14 +541,17 @@
     </nav>
 
     <header role="banner">
-        <div class="header-title">
-            <h1>Venturi Meter Monitoring</h1>
-            <div class="last-update" id="lastUpdate" aria-live="polite" aria-atomic="true">12:09 PM</div>
-        </div>
-        <button class="refresh-button" onclick="fetchData()" aria-label="Refresh data">
-            <span id="refreshIcon" aria-hidden="true">↻</span> Refresh
-        </button>
-    </header>
+    <div class="header-title">
+        <h1>Venturi Meter Monitoring</h1>
+        <div class="last-update" id="lastUpdate" aria-live="polite" aria-atomic="true">12:09 PM</div>
+    </div>
+    <button class="refresh-button" onclick="fetchData()" aria-label="Refresh data">
+        <span id="refreshIcon" aria-hidden="true">↻</span> Refresh
+    </button>
+</header>
+
+  <!-- Add this progress bar element -->
+  <div id="loadingProgress" role="progressbar" aria-label="Loading data" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-busy="false" style="height: 3px; width: 0%; background-color: #65D8E4; transition: width 0.3s ease;"></div>
 
     <main id="main-content" role="main" tabindex="-1">
         <div class="dashboard">
@@ -931,6 +953,41 @@
              gradient.addColorStop(1, colorStart);
              return gradient;
          }
+        // Add these helper functions to control the progress bar
+        function showProgress() {
+            const progressBar = document.getElementById('loadingProgress');
+            progressBar.setAttribute('aria-busy', 'true');
+            progressBar.style.width = '80%';
+            progressBar.setAttribute('aria-valuenow', '80');
+        }
+        
+        function hideProgress() {
+            const progressBar = document.getElementById('loadingProgress');
+            progressBar.setAttribute('aria-busy', 'false');
+            progressBar.style.width = '100%';
+            progressBar.setAttribute('aria-valuenow', '100');
+            
+            // Reset after animation completes
+            setTimeout(() => {
+                progressBar.style.width = '0%';
+                progressBar.setAttribute('aria-valuenow', '0');
+            }, 500);
+        }
+        
+        function showErrorProgress() {
+            const progressBar = document.getElementById('loadingProgress');
+            progressBar.style.backgroundColor = '#EF476F';
+            progressBar.setAttribute('aria-busy', 'false');
+            progressBar.style.width = '100%';
+            progressBar.setAttribute('aria-valuenow', '100');
+            
+            // Reset after animation completes
+            setTimeout(() => {
+                progressBar.style.width = '0%';
+                progressBar.style.backgroundColor = '#65D8E4';
+                progressBar.setAttribute('aria-valuenow', '0');
+            }, 1000);
+        }
  
          // Helper function to create line charts
          function createLineChart(elementId, color) {
@@ -1075,6 +1132,7 @@
              try {
                  // Show loading state
                  document.getElementById('refreshIcon').innerHTML = '<div class="loader"></div>';
+                 showProgress();
  
                  // Fetch data from GitHub Pages JSON file
                  const response = await fetch('/flowsense/venturi_data.json');
@@ -1086,12 +1144,16 @@
  
                  // Process the data
                  processData(data);
+                 
+                 // Complete progress
+                 hideProgress();
  
                  // Reset refresh button
                  document.getElementById('refreshIcon').innerHTML = '↻';
              } catch (error) {
                  console.error('Error fetching data:', error);
                  alert('Failed to fetch data. Using sample data instead.');
+                 showErrorProgress();
  
                  // Use sample data instead
                  useSampleData();
