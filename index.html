@@ -220,33 +220,6 @@
              .card-value {
                  font-size: 2rem;
              }
-            .modal {
-                position: fixed;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                width: 100%;
-                border-radius: 16px 16px 0 0;
-                transform: translateY(100%);
-            }
-            
-            .modal.active {
-                transform: translateY(0);
-            }
-            
-            .modal-drag-handle {
-                display: block;
-                height: 4px;
-                width: 40px;
-                background-color: rgba(255, 255, 255, 0.3);
-                margin: 8px auto;
-                border-radius: 2px;
-                cursor: ns-resize;
-            }
-            
-            .card.active-card {
-                transform: translateY(-100px) scale(0.95);
-            }
          }
  
          .centered-placeholder {
@@ -330,92 +303,85 @@
          .info { background-color: var(--accent-blue); box-shadow: 0 0 0 2px #fff, 0 0 0 3px #0099cc; }
          ul { padding: 25px; }
       /* Modal Styles */
-    modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s, visibility 0.3s;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal {
-    position: relative;
-    width: 90%;
-    max-width: 600px;
-    max-height: 80vh;
-    background-color: #1E2746;
-    border-radius: 16px;
-    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.4);
-    z-index: 1001;
-    transform: scale(0.9);
-    opacity: 0;
-    transition: transform 0.3s ease-out, opacity 0.3s;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.modal.active {
-    transform: scale(1);
-    opacity: 1;
-}
-
-.modal-header {
-    padding: 20px;
-    background-color: #2A3655;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-title {
-    margin: 0;
-    font-size: 1.25rem;
-    color: #FFFFFF;
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    color: #9DA3B4;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
-    transition: color 0.2s;
-}
-
-.modal-close:hover {
-    color: #FFFFFF;
-}
-
-.modal-content {
-    padding: 20px;
-    overflow-y: auto;
-    flex-grow: 1;
-}
-
-.modal-drag-handle {
-    display: none; /* Hide for laptop */
-}
-
-/* Card Animation for Modal */
-.card.active-card {
-    position: fixed;
-    z-index: 1002;
-    box-shadow: 0 10px 30px rgba(0, 0, 255, 0.3);
-    transform: translateY(-20px) scale(1.02);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    pointer-events: none;
-}
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+    }
+    
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .modal {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-height: 80vh;
+        background-color: #1E2746;
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+        z-index: 1001;
+        transform: translateY(100%);
+        transition: transform 0.3s ease-out;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        margin: 0 auto;
+    }
+    
+    .modal.active {
+        transform: translateY(0);
+    }
+    
+    .modal-header {
+        padding: 16px;
+        background-color: #2A3655;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-title {
+        margin: 0;
+        font-size: 18px;
+        color: #FFFFFF;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        color: #9DA3B4;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
+    
+    .modal-content {
+        padding: 16px;
+        overflow-y: auto;
+        flex-grow: 1;
+    }
+    
+    .modal-drag-handle {
+        height: 4px;
+        width: 40px;
+        background-color: rgba(255, 255, 255, 0.3);
+        margin: 8px auto;
+        border-radius: 2px;
+        cursor: ns-resize;
+    }
     
     /* Info button on cards */
     .card-info-button {
@@ -472,6 +438,13 @@
             display: none;
         }
     }
+      /* Card styles for modal interaction */
+.card.active-card {
+    position: relative;
+    z-index: 1001 !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 255, 0.3);
+    transition: all 0.3s ease;
+}
 
 /* Card highlight animation */
 @keyframes cardHighlight {
@@ -1612,44 +1585,11 @@ function openModal(chartType, card) {
     
     // Position card above modal instead of cloning
     positionCardAboveModal(card);
-    originalCardPosition = {
-           rect: card.getBoundingClientRect(),
-           style: {
-               position: card.style.position,
-               top: card.style.top,
-               left: card.style.left,
-               width: card.style.width,
-               height: card.style.height,
-               zIndex: card.style.zIndex,
-               transition: card.style.transition
-           }
-       };
-    // Prepare card for animation
-    card.style.transition = 'all 0.3s ease';
-    card.style.position = 'fixed';
-    card.style.width = `${originalCardPosition.rect.width}px`;
-    card.style.height = `${originalCardPosition.rect.height}px`;
-    card.style.left = `${originalCardPosition.rect.left}px`;
-    card.style.top = `${originalCardPosition.rect.top}px`;
-    card.style.zIndex = '1002';
- 
-    // Force reflow
-    void card.offsetHeight;
-    
-    // Animate card
-    card.classList.add('active-card');
-    
-    // Calculate modal position based on card position for laptop
-    if (!isMobile) {
-        const cardRect = card.getBoundingClientRect();
-        const modalTop = Math.max(20, cardRect.top - 20);
-        infoModal.style.top = `${modalTop}px`;
-    }
     
     modalTitle.textContent = info.title;
     modalContent.innerHTML = info.content;
     
-    // Show modal
+    // Show elements before activating
     modalOverlay.style.display = 'block';
     infoModal.style.display = 'flex';
     
@@ -1670,33 +1610,13 @@ function closeModal() {
     infoModal.classList.remove('active');
     
     // Reset the original card position
-    if (activeCard && originalCardPosition) {
-        activeCard.classList.remove('active-card');
-        
-        setTimeout(() => {
-            // Reset card styles
-            if (originalCardPosition.style) {
-                activeCard.style.position = originalCardPosition.style.position;
-                activeCard.style.top = originalCardPosition.style.top;
-                activeCard.style.left = originalCardPosition.style.left;
-                activeCard.style.width = originalCardPosition.style.width;
-                activeCard.style.height = originalCardPosition.style.height;
-                activeCard.style.zIndex = originalCardPosition.style.zIndex;
-                activeCard.style.transition = originalCardPosition.style.transition;
-            }
-            
-            // Reset transform after transition completes
-            setTimeout(() => {
-                activeCard.style.transform = '';
-                activeCard.style.boxShadow = '';
-            }, 300);
-        }, 10);
+    if (activeCard) {
+        resetCardPosition(activeCard);
+        activeCard = null;
     }
     
     infoModal.style.transform = 'translateY(0)';
-    // Reset variables
-    activeCard = null;
-    originalCardPosition = null;
+    
     // Wait for transition to complete before hiding
     setTimeout(() => {
         modalOverlay.style.display = 'none';
