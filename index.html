@@ -425,39 +425,56 @@
             display: none;
         }
     }
-      .card.active-card {
-        position: relative;
-        z-index: 1001 !important;
-        box-shadow: 0 8px 20px rgba(0, 0, 255, 0.3);
-        transition: all 0.3s ease;
+      /* Card styles for modal interaction */
+.card.active-card {
+    position: relative;
+    z-index: 1001 !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+/* Card highlight animation */
+@keyframes cardHighlight {
+    0% { 
+        box-shadow: 0 0 0 rgba(0, 0, 255, 0.1); 
+        transform: translateY(0); 
     }
-      /* Card highlight animation */
-    @keyframes cardHighlight {
-        0% { box-shadow: 0 0 0 rgba(0, 0, 255, 0.1); transform: translateY(0); }
-        100% { box-shadow: 0 8px 20px rgba(0, 0, 255, 0.3); transform: translateY(-10px); }
+    100% { 
+        box-shadow: 0 8px 20px rgba(0, 0, 255, 0.3); 
+        transform: translateY(-10px); 
     }
-    
-    .card-clone {
-        position: fixed !important;
-        z-index: 1001 !important;
-        box-shadow: 0 8px 20px rgba(0, 0, 255, 0.3);
-        transition: all 0.3s ease;
-        background-color: inherit;
-        border-radius: inherit;
-    }
-    
-    .modal.active {
-        z-index: 1000;
-    }
-    
-    .modal-overlay.active {
-        z-index: 999;
-    }
-    
-    /* Hide the original card when cloned */
-    .card.being-cloned {
-        visibility: hidden;
-    }
+}
+
+.card-clone {
+    position: fixed !important;
+    z-index: 1001 !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 255, 0.3);
+    transition: all 0.3s ease;
+    background-color: inherit;
+    border-radius: inherit;
+    /* Ensure charts inside clone are visible */
+    opacity: 1;
+    visibility: visible;
+}
+
+.card-clone canvas {
+    /* Make sure canvas elements inside clone are visible */
+    display: block !important;
+    opacity: 1 !important;
+}
+
+.modal.active {
+    z-index: 1000;
+}
+
+.modal-overlay.active {
+    z-index: 999;
+}
+
+/* Hide the original card when cloned */
+.card.being-cloned {
+    visibility: hidden;
+}
      </style>
  </head>
  <body>
@@ -1311,6 +1328,25 @@ function cloneAndPositionCard(card) {
     cardClone.style.left = `${cardRect.left}px`;
     cardClone.style.backgroundColor = computedStyle.backgroundColor;
     
+    // Find all canvas elements in the original card
+    const originalCanvases = card.querySelectorAll('canvas');
+    const cloneCanvases = cardClone.querySelectorAll('canvas');
+    
+    // For each canvas in the original, copy its content to the cloned canvas
+    originalCanvases.forEach((originalCanvas, index) => {
+        if (index < cloneCanvases.length) {
+            const cloneCanvas = cloneCanvases[index];
+            
+            // Set the same dimensions
+            cloneCanvas.width = originalCanvas.width;
+            cloneCanvas.height = originalCanvas.height;
+            
+            // Copy the canvas content
+            const ctx = cloneCanvas.getContext('2d');
+            ctx.drawImage(originalCanvas, 0, 0);
+        }
+    });
+    
     // Mark the original card
     card.classList.add('being-cloned');
     
@@ -1332,8 +1368,66 @@ function cloneAndPositionCard(card) {
     
     return cardClone;
 }
+ // An alternative approach: Instead of cloning the card with charts
+// We can simply position the original card above the modal
 
-// Open modal with specific content
+function positionCardAboveModal(card) {
+    // Store original position
+    if (!card.dataset.originalPosition) {
+        const rect = card.getBoundingClientRect();
+        card.dataset.originalPosition = JSON.stringify({
+            position: card.style.position,
+            top: card.style.top,
+            left: card.style.left,
+            zIndex: card.style.zIndex,
+            transform: card.style.transform
+        });
+        
+        // Make card float above modal
+        card.style.position = 'fixed';
+        card.style.top = `${rect.top}px`;
+        card.style.left = `${rect.left}px`;
+        card.style.zIndex = '1001';
+        
+        // Animate the card upward
+        setTimeout(() => {
+            if (checkMobile()) {
+                // For mobile, position above modal
+                const modalTop = parseFloat(window.getComputedStyle(infoModal).top) || window.innerHeight * 0.4;
+                card.style.top = `${modalTop - rect.height - 20}px`;
+            } else {
+                // For desktop, just move it up a bit
+                card.style.top = `${rect.top - 20}px`;
+            }
+            card.style.transform = 'scale(1.02)';
+            card.style.boxShadow = '0 8px 20px rgba(0, 0, 255, 0.3)';
+        }, 10);
+    }
+}
+
+function resetCardPosition(card) {
+    if (card.dataset.originalPosition) {
+        const original = JSON.parse(card.dataset.originalPosition);
+        
+        // Animate back to original position
+        const rect = card.getBoundingClientRect();
+        card.style.transition = 'all 0.3s ease';
+        
+        setTimeout(() => {
+            card.style.position = original.position || '';
+            card.style.top = original.top || '';
+            card.style.left = original.left || '';
+            card.style.zIndex = original.zIndex || '';
+            card.style.transform = original.transform || '';
+            card.style.boxShadow = '';
+            
+            // Clean up
+            delete card.dataset.originalPosition;
+        }, 300);
+    }
+}
+
+// Modified openModal function
 function openModal(chartType, card) {
     const info = chartInfo[chartType];
     if (!info) return;
@@ -1341,17 +1435,8 @@ function openModal(chartType, card) {
     // Set active card
     activeCard = card;
     
-    // Store original inline styles if any
-    originalCardStyle = {
-        position: card.style.position,
-        zIndex: card.style.zIndex,
-        boxShadow: card.style.boxShadow,
-        transform: card.style.transform
-    };
-    
-    // Clone and position the card above the modal
-    const cardClone = cloneAndPositionCard(card);
-    activeCard.cardClone = cardClone;
+    // Position card above modal instead of cloning
+    positionCardAboveModal(card);
     
     modalTitle.textContent = info.title;
     modalContent.innerHTML = info.content;
@@ -1371,27 +1456,15 @@ function openModal(chartType, card) {
     document.body.style.overflow = 'hidden';
 }
 
-// Close modal
+// Modified closeModal function
 function closeModal() {
     modalOverlay.classList.remove('active');
     infoModal.classList.remove('active');
     
-    // Remove the card clone if it exists
-    if (activeCard && activeCard.cardClone) {
-        // Animate the clone back to original position
-        const cardRect = activeCard.getBoundingClientRect();
-        activeCard.cardClone.style.top = `${cardRect.top}px`;
-        activeCard.cardClone.style.left = `${cardRect.left}px`;
-        
-        // Remove after animation
-        setTimeout(() => {
-            if (activeCard.cardClone.parentNode) {
-                activeCard.cardClone.parentNode.removeChild(activeCard.cardClone);
-            }
-            // Make original card visible again
-            activeCard.classList.remove('being-cloned');
-            activeCard = null;
-        }, 300);
+    // Reset the original card position
+    if (activeCard) {
+        resetCardPosition(activeCard);
+        activeCard = null;
     }
     
     infoModal.style.transform = 'translateY(0)';
@@ -1404,7 +1477,7 @@ function closeModal() {
         document.body.style.overflow = '';
     }, 300);
 }
-
+ 
 // Event listeners
 modalOverlay.addEventListener('click', closeModal);
 modalClose.addEventListener('click', closeModal);
