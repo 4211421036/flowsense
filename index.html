@@ -428,9 +428,17 @@
       .card.active-card {
         position: relative;
         z-index: 1001 !important;
-        transform: translateY(-10px);
-        box-shadow: 0 10px 25px rgba(0, 0, 255, 0.3);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+      /* Card highlight animation */
+    @keyframes cardHighlight {
+        0% { box-shadow: 0 0 0 rgba(0, 0, 255, 0.1); transform: translateY(0); }
+        100% { box-shadow: 0 8px 20px rgba(0, 0, 255, 0.3); transform: translateY(-10px); }
+    }
+    
+    .card.active-card {
+        animation: cardHighlight 0.3s forwards;
     }
     
     .modal.active {
@@ -1105,16 +1113,17 @@
        });
      </script>
 <script>
-    // Modal functionality
     const modalOverlay = document.getElementById('modalOverlay');
-    const infoModal = document.getElementById('infoModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalContent = document.getElementById('modalContent');
-    const modalClose = document.getElementById('modalClose');
-    const modalDragHandle = document.querySelector('.modal-drag-handle');
-    
-    // Track the currently active card
-    let activeCard = null;
+const infoModal = document.getElementById('infoModal');
+const modalTitle = document.getElementById('modalTitle');
+const modalContent = document.getElementById('modalContent');
+const modalClose = document.getElementById('modalClose');
+const modalDragHandle = document.querySelector('.modal-drag-handle');
+
+// Track the currently active card
+let activeCard = null;
+let originalCardPosition = null;
+let isMobile = window.innerWidth <= 768; // Mobile detection
     
     // Chart information content
     const chartInfo = {
@@ -1233,147 +1242,199 @@
     };
     
     // Add info buttons to each card
-    document.querySelectorAll('.card').forEach(card => {
-       // Skip system status and configuration cards
-       if (!card.querySelector('.chart-container') && !card.querySelector('.chart-dual') && !card.querySelector('.gauge-container')) {
-           return;
-       }
-       
-       const cardTitle = card.querySelector('.card-title').textContent;
-       let chartType = '';
-       
-       if (cardTitle.includes('Pressure 1')) chartType = 'pressure1';
-       else if (cardTitle.includes('Pressure 2')) chartType = 'pressure2';
-       else if (cardTitle.includes('Differential')) chartType = 'diffPressure';
-       else if (cardTitle.includes('Flow Rate') && !cardTitle.includes('Gauge')) chartType = 'flowRate';
-       else if (cardTitle.includes('Comparison')) chartType = 'pressureComp';
-       else if (cardTitle.includes('Gauge')) chartType = 'flowGauge';
-       else if (cardTitle.includes('Efficiency')) chartType = 'efficiency';
-       else if (cardTitle.includes('Reynolds')) chartType = 'reynolds';
-       
-       if (chartType) {
-           const infoButton = document.createElement('button');
-           infoButton.className = 'card-info-button';
-           infoButton.innerHTML = 'i';
-           infoButton.addEventListener('click', (e) => {
-               e.stopPropagation(); // Prevent event bubbling
-               openModal(chartType, card);
-           });
-           card.style.position = 'relative';
-           card.appendChild(infoButton);
-           
-           // Store the chart type on the card element for reference
-           card.dataset.chartType = chartType;
-       }
-   });
+    // Add info buttons to each card
+document.querySelectorAll('.card').forEach(card => {
+    // Skip system status and configuration cards
+    if (!card.querySelector('.chart-container') && !card.querySelector('.chart-dual') && !card.querySelector('.gauge-container')) {
+        return;
+    }
     
-    function openModal(chartType, card) {
-       const info = chartInfo[chartType];
-       if (!info) return;
-       
-       // Set active card
-       activeCard = card;
-       
-       // Add active-card class to highlight it
-       card.classList.add('active-card');
-       
-       modalTitle.textContent = info.title;
-       modalContent.innerHTML = info.content;
-       
-       // Show elements before activating
-       modalOverlay.style.display = 'block';
-       infoModal.style.display = 'flex';
-       
-       // Position the modal below the card
-       const cardRect = card.getBoundingClientRect();
-       const modalHeight = infoModal.offsetHeight || 300; // Fallback height
-       
-       // Force reflow before adding active class
-       void modalOverlay.offsetWidth;
-       void infoModal.offsetWidth;
-       
-       modalOverlay.classList.add('active');
-       infoModal.classList.add('active');
-       
-       // Prevent body scrolling when modal is open
-       document.body.style.overflow = 'hidden';
-   }
-   
-   // Close modal
-   function closeModal() {
-       modalOverlay.classList.remove('active');
-       infoModal.classList.remove('active');
-       
-       // Remove active-card class from the currently active card
-       if (activeCard) {
-           activeCard.classList.remove('active-card');
-           activeCard = null;
-       }
-       
-       infoModal.style.transform = 'translateY(0)';
-       
-       // Wait for transition to complete before hiding
-       setTimeout(() => {
-           modalOverlay.style.display = 'none';
-           infoModal.style.display = 'none';
-           infoModal.style.transform = 'translateY(0)';
-           document.body.style.overflow = '';
-       }, 300);
-   }
-   
-   // Event listeners
-   modalOverlay.addEventListener('click', closeModal);
-   modalClose.addEventListener('click', closeModal);
-   
-   // Escape key to close modal
-   document.addEventListener('keydown', (e) => {
-       if (e.key === 'Escape' && activeCard) {
-           closeModal();
-       }
-   });
-   
-   // Swipe to close functionality for mobile
-   let startY = 0;
-   let currentY = 0;
-   let isDragging = false;
-   
-   modalDragHandle.addEventListener('touchstart', (e) => {
-       startY = e.touches[0].clientY;
-       currentY = startY;
-       isDragging = true;
-       e.preventDefault();
-   }, { passive: false });
-   
-   window.addEventListener('touchmove', (e) => {
-       if (!isDragging) return;
-       currentY = e.touches[0].clientY;
-       
-       // Calculate how much the modal has been dragged down
-       const deltaY = currentY - startY;
-       
-       // Only move the modal down if dragging down
-       if (deltaY > 0) {
-           infoModal.style.transform = `translateY(${deltaY}px)`;
-       }
-       e.preventDefault();
-   }, { passive: false });
-   
-   window.addEventListener('touchend', () => {
-       if (!isDragging) return;
-       isDragging = false;
-       
-       // Calculate how much the modal has been dragged down
-       const deltaY = currentY - startY;
-       
-       // If dragged enough, close the modal
-       if (deltaY > 100) {
-           closeModal();
-           infoModal.style.transform = 'translateY(0)';
-       } else {
-           // Otherwise, snap back to open position
-           infoModal.style.transform = 'translateY(0)';
-       }
-   });
+    const cardTitle = card.querySelector('.card-title').textContent;
+    let chartType = '';
+    
+    if (cardTitle.includes('Pressure 1')) chartType = 'pressure1';
+    else if (cardTitle.includes('Pressure 2')) chartType = 'pressure2';
+    else if (cardTitle.includes('Differential')) chartType = 'diffPressure';
+    else if (cardTitle.includes('Flow Rate') && !cardTitle.includes('Gauge')) chartType = 'flowRate';
+    else if (cardTitle.includes('Comparison')) chartType = 'pressureComp';
+    else if (cardTitle.includes('Gauge')) chartType = 'flowGauge';
+    else if (cardTitle.includes('Efficiency')) chartType = 'efficiency';
+    else if (cardTitle.includes('Reynolds')) chartType = 'reynolds';
+    
+    if (chartType) {
+        const infoButton = document.createElement('button');
+        infoButton.className = 'card-info-button';
+        infoButton.innerHTML = 'i';
+        infoButton.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event bubbling
+            openModal(chartType, card);
+        });
+        card.style.position = 'relative';
+        card.appendChild(infoButton);
+        
+        // Store the chart type on the card element for reference
+        card.dataset.chartType = chartType;
+    }
+});
+    
+    // Function to check if device is mobile
+function checkMobile() {
+    isMobile = window.innerWidth <= 768;
+    return isMobile;
+}
+
+// Window resize listener to update mobile status
+window.addEventListener('resize', checkMobile);
+
+// Open modal with specific content
+function openModal(chartType, card) {
+    const info = chartInfo[chartType];
+    if (!info) return;
+    
+    // Set active card
+    activeCard = card;
+    
+    // Store the original card position
+    originalCardPosition = {
+        top: card.offsetTop,
+        left: card.offsetLeft,
+        width: card.offsetWidth,
+        height: card.offsetHeight
+    };
+    
+    // Add active-card class to highlight it
+    card.classList.add('active-card');
+    
+    modalTitle.textContent = info.title;
+    modalContent.innerHTML = info.content;
+    
+    // Show elements before activating
+    modalOverlay.style.display = 'block';
+    infoModal.style.display = 'flex';
+    
+    // Position the modal based on device type
+    const cardRect = card.getBoundingClientRect();
+    
+    if (checkMobile()) {
+        // For mobile: Position the modal to show below the highlighted card
+        // First move the card upward
+        card.style.transform = 'translateY(-10px)';
+        
+        // Position modal below the card with a slight gap
+        infoModal.style.top = `${cardRect.bottom + 20}px`;
+        infoModal.style.left = '10px';
+        infoModal.style.right = '10px';
+        infoModal.style.width = 'auto';
+        infoModal.style.maxWidth = 'calc(100% - 20px)';
+    } else {
+        // For desktop: Position the modal to the right side of the card
+        card.style.transform = 'translateY(-10px)';
+        
+        // Position modal next to the card with a slight gap
+        infoModal.style.top = `${cardRect.top}px`;
+        infoModal.style.left = `${cardRect.right + 20}px`;
+        infoModal.style.maxWidth = '400px';
+    }
+    
+    // Force reflow before adding active class
+    void modalOverlay.offsetWidth;
+    void infoModal.offsetWidth;
+    
+    modalOverlay.classList.add('active');
+    infoModal.classList.add('active');
+    
+    // Scroll modal into view if needed
+    setTimeout(() => {
+        const modalRect = infoModal.getBoundingClientRect();
+        if (modalRect.bottom > window.innerHeight) {
+            infoModal.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+    }, 100);
+    
+    // Prevent body scrolling when modal is open
+    document.body.style.overflow = 'hidden';
+}
+
+// Close modal
+function closeModal() {
+    modalOverlay.classList.remove('active');
+    infoModal.classList.remove('active');
+    
+    // Remove active-card class from the currently active card
+    if (activeCard) {
+        activeCard.classList.remove('active-card');
+        activeCard.style.transform = '';
+        activeCard = null;
+    }
+    
+    infoModal.style.transform = 'translateY(0)';
+    
+    // Wait for transition to complete before hiding
+    setTimeout(() => {
+        modalOverlay.style.display = 'none';
+        infoModal.style.display = 'none';
+        infoModal.style.transform = '';
+        infoModal.style.top = '';
+        infoModal.style.left = '';
+        infoModal.style.width = '';
+        infoModal.style.maxWidth = '';
+        document.body.style.overflow = '';
+    }, 300);
+}
+
+// Event listeners
+modalOverlay.addEventListener('click', closeModal);
+modalClose.addEventListener('click', closeModal);
+
+// Escape key to close modal
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && activeCard) {
+        closeModal();
+    }
+});
+
+// Swipe to close functionality for mobile
+let startY = 0;
+let currentY = 0;
+let isDragging = false;
+
+modalDragHandle.addEventListener('touchstart', (e) => {
+    startY = e.touches[0].clientY;
+    currentY = startY;
+    isDragging = true;
+    e.preventDefault();
+}, { passive: false });
+
+window.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    currentY = e.touches[0].clientY;
+    
+    // Calculate how much the modal has been dragged down
+    const deltaY = currentY - startY;
+    
+    // Only move the modal down if dragging down
+    if (deltaY > 0) {
+        infoModal.style.transform = `translateY(${deltaY}px)`;
+    }
+    e.preventDefault();
+}, { passive: false });
+
+window.addEventListener('touchend', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    
+    // Calculate how much the modal has been dragged down
+    const deltaY = currentY - startY;
+    
+    // If dragged enough, close the modal
+    if (deltaY > 100) {
+        closeModal();
+        infoModal.style.transform = 'translateY(0)';
+    } else {
+        // Otherwise, snap back to open position
+        infoModal.style.transform = 'translateY(0)';
+    }
+});
 </script>
  </body>
  </html>
