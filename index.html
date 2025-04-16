@@ -477,16 +477,42 @@
 }
       .skip-link {
             position: absolute;
-            top: -40px;
-            left: 0;
-            background: #000;
+            left: -9999px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            z-index: 9999;
+            background: #0056b3;
             color: white;
             padding: 8px;
-            z-index: 100;
-            transition: top 0.3s;
+            border-radius: 4px;
         }
         .skip-link:focus {
-            top: 0;
+            left: 10px;
+            top: 10px;
+            width: auto;
+            height: auto;
+            overflow: visible;
+        }
+
+        /* Visually hidden utility class for screen readers */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus styles for keyboard navigation */
+        :focus {
+            outline: 3px solid #0056b3;
+            outline-offset: 2px;
         }
      </style>
  </head>
@@ -1599,23 +1625,6 @@ window.addEventListener('touchend', () => {
                 }
             }
         });
-
-        // Visually hidden utility class for screen readers
-        const style = document.createElement('style');
-        style.textContent = `
-            .visually-hidden {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                padding: 0;
-                margin: -1px;
-                overflow: hidden;
-                clip: rect(0, 0, 0, 0);
-                white-space: nowrap;
-                border: 0;
-            }
-        `;
-        document.head.appendChild(style);
     </script>
  </body>
  </html>
