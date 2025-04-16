@@ -437,8 +437,13 @@
         100% { box-shadow: 0 8px 20px rgba(0, 0, 255, 0.3); transform: translateY(-10px); }
     }
     
-    .card.active-card {
-        animation: cardHighlight 0.3s forwards;
+    .card-clone {
+        position: fixed !important;
+        z-index: 1001 !important;
+        box-shadow: 0 8px 20px rgba(0, 0, 255, 0.3);
+        transition: all 0.3s ease;
+        background-color: inherit;
+        border-radius: inherit;
     }
     
     .modal.active {
@@ -447,6 +452,11 @@
     
     .modal-overlay.active {
         z-index: 999;
+    }
+    
+    /* Hide the original card when cloned */
+    .card.being-cloned {
+        visibility: hidden;
     }
      </style>
  </head>
@@ -1277,7 +1287,7 @@ document.querySelectorAll('.card').forEach(card => {
     }
 });
     
-    // Function to check if device is mobile
+// Function to check if device is mobile
 function checkMobile() {
     isMobile = window.innerWidth <= 768;
     return isMobile;
@@ -1285,6 +1295,43 @@ function checkMobile() {
 
 // Window resize listener to update mobile status
 window.addEventListener('resize', checkMobile);
+
+// Function to clone a card and position it above the modal
+function cloneAndPositionCard(card) {
+    // Get the original card's styles and position
+    const cardRect = card.getBoundingClientRect();
+    const computedStyle = window.getComputedStyle(card);
+    
+    // Create a clone of the card
+    const cardClone = card.cloneNode(true);
+    cardClone.classList.add('card-clone');
+    cardClone.style.width = `${cardRect.width}px`;
+    cardClone.style.height = `${cardRect.height}px`;
+    cardClone.style.top = `${cardRect.top}px`;
+    cardClone.style.left = `${cardRect.left}px`;
+    cardClone.style.backgroundColor = computedStyle.backgroundColor;
+    
+    // Mark the original card
+    card.classList.add('being-cloned');
+    
+    // Append the clone to the body
+    document.body.appendChild(cardClone);
+    
+    // Animate the clone to position above the modal
+    setTimeout(() => {
+        // For mobile, position the card to float at the top of the screen
+        if (checkMobile()) {
+            // Calculate position based on modal position
+            const modalTop = parseFloat(window.getComputedStyle(infoModal).top) || cardRect.bottom + 20;
+            cardClone.style.top = `${modalTop - cardRect.height - 20}px`; // Position above the modal with 20px gap
+        } else {
+            // For desktop, just move it up a bit
+            cardClone.style.top = `${cardRect.top - 20}px`;
+        }
+    }, 10);
+    
+    return cardClone;
+}
 
 // Open modal with specific content
 function openModal(chartType, card) {
@@ -1294,16 +1341,17 @@ function openModal(chartType, card) {
     // Set active card
     activeCard = card;
     
-    // Store the original card position
-    originalCardPosition = {
-        top: card.offsetTop,
-        left: card.offsetLeft,
-        width: card.offsetWidth,
-        height: card.offsetHeight
+    // Store original inline styles if any
+    originalCardStyle = {
+        position: card.style.position,
+        zIndex: card.style.zIndex,
+        boxShadow: card.style.boxShadow,
+        transform: card.style.transform
     };
     
-    // Add active-card class to highlight it
-    card.classList.add('active-card');
+    // Clone and position the card above the modal
+    const cardClone = cloneAndPositionCard(card);
+    activeCard.cardClone = cardClone;
     
     modalTitle.textContent = info.title;
     modalContent.innerHTML = info.content;
@@ -1312,44 +1360,12 @@ function openModal(chartType, card) {
     modalOverlay.style.display = 'block';
     infoModal.style.display = 'flex';
     
-    // Position the modal based on device type
-    const cardRect = card.getBoundingClientRect();
-    
-    if (checkMobile()) {
-        // For mobile: Position the modal to show below the highlighted card
-        // First move the card upward
-        card.style.transform = 'translateY(-10px)';
-        
-        // Position modal below the card with a slight gap
-        infoModal.style.top = `${cardRect.bottom + 20}px`;
-        infoModal.style.left = '10px';
-        infoModal.style.right = '10px';
-        infoModal.style.width = 'auto';
-        infoModal.style.maxWidth = 'calc(100% - 20px)';
-    } else {
-        // For desktop: Position the modal to the right side of the card
-        card.style.transform = 'translateY(-10px)';
-        
-        // Position modal next to the card with a slight gap
-        infoModal.style.top = `${cardRect.top}px`;
-        infoModal.style.left = `${cardRect.right + 20}px`;
-        infoModal.style.maxWidth = '400px';
-    }
-    
     // Force reflow before adding active class
     void modalOverlay.offsetWidth;
     void infoModal.offsetWidth;
     
     modalOverlay.classList.add('active');
     infoModal.classList.add('active');
-    
-    // Scroll modal into view if needed
-    setTimeout(() => {
-        const modalRect = infoModal.getBoundingClientRect();
-        if (modalRect.bottom > window.innerHeight) {
-            infoModal.scrollIntoView({behavior: 'smooth', block: 'center'});
-        }
-    }, 100);
     
     // Prevent body scrolling when modal is open
     document.body.style.overflow = 'hidden';
@@ -1360,11 +1376,22 @@ function closeModal() {
     modalOverlay.classList.remove('active');
     infoModal.classList.remove('active');
     
-    // Remove active-card class from the currently active card
-    if (activeCard) {
-        activeCard.classList.remove('active-card');
-        activeCard.style.transform = '';
-        activeCard = null;
+    // Remove the card clone if it exists
+    if (activeCard && activeCard.cardClone) {
+        // Animate the clone back to original position
+        const cardRect = activeCard.getBoundingClientRect();
+        activeCard.cardClone.style.top = `${cardRect.top}px`;
+        activeCard.cardClone.style.left = `${cardRect.left}px`;
+        
+        // Remove after animation
+        setTimeout(() => {
+            if (activeCard.cardClone.parentNode) {
+                activeCard.cardClone.parentNode.removeChild(activeCard.cardClone);
+            }
+            // Make original card visible again
+            activeCard.classList.remove('being-cloned');
+            activeCard = null;
+        }, 300);
     }
     
     infoModal.style.transform = 'translateY(0)';
@@ -1374,10 +1401,6 @@ function closeModal() {
         modalOverlay.style.display = 'none';
         infoModal.style.display = 'none';
         infoModal.style.transform = '';
-        infoModal.style.top = '';
-        infoModal.style.left = '';
-        infoModal.style.width = '';
-        infoModal.style.maxWidth = '';
         document.body.style.overflow = '';
     }, 300);
 }
