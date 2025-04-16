@@ -122,6 +122,11 @@
          .header-title h1 {
              font-size: 1.5rem;
              font-weight: 600;
+             display: -webkit-box;
+             -webkit-line-clamp: 1; /* jumlah baris */
+             -webkit-box-orient: vertical;
+             overflow: hidden;
+             text-overflow: ellipsis;
          }
  
          .last-update {
