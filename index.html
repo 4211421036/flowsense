@@ -620,6 +620,108 @@
     #loadingProgress[aria-busy="false"] {
         transition: width 0.5s ease;
     }
+      .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modals {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            width: 320px;
+            max-width: 90%;
+            overflow: hidden;
+        }
+        
+        .modals-header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .app-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            margin-right: 12px;
+            background-color: #4285f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        .app-info h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        
+        .app-info p {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .modals-body {
+            padding: 16px;
+        }
+        
+        .modals-body p {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .modals-footer {
+            padding: 12px 16px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid #eee;
+        }
+        
+        .btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-cancel {
+            background-color: transparent;
+            color: #4285f4;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .btn-install {
+            background-color: #4285f4;
+            color: white;
+        }
+        
+        .btn-install:hover {
+            background-color: #2d76e7;
+        }
+        
+        .hidden {
+            display: none;
+        }
      </style>
  </head>
  <body>
@@ -872,6 +974,25 @@
         <!-- Content will be inserted here -->
     </div>
 </div>
+
+<div class="overlay" id="installModal">
+        <div class="modals">
+            <div class="modals-header">
+                <div class="app-logo">A</div>
+                <div class="app-info">
+                    <h3>Aplikasi Saya</h3>
+                    <p>Developer: Nama Pengembang</p>
+                </div>
+            </div>
+            <div class="modals-body">
+                <p>Instal aplikasi ini untuk akses lebih cepat dan pengalaman pengguna yang lebih baik. Aplikasi ini membutuhkan ruang penyimpanan minimal.</p>
+            </div>
+            <div class="modals-footer">
+                <button class="btn btn-cancel" id="cancelBtn">Batal</button>
+                <button class="btn btn-install" id="installBtn">Instal</button>
+            </div>
+        </div>
+    </div>
 
 <footer role="contentinfo" class="footer-info">
     <p role="text">Venturi Meter Monitoring System | Last Updated: <span id="footerLastUpdate" aria-live="polite" aria-atomic="true">12:09 PM</span></p>
@@ -1341,25 +1462,72 @@
              setInterval(fetchData, 30000);
          };
      </script>
-     <script>
-       // Register service worker
-       if ('serviceWorker' in navigator) {
-         window.addEventListener('load', () => {
-           navigator.serviceWorker.register('/flowsense/sw.js')
-             .then(registration => {
-               console.log('ServiceWorker registration successful');
-             })
-             .catch(err => {
-               console.log('ServiceWorker registration failed: ', err);
-             });
-         });
-       }
- 
-       // Check for updates when coming back online
-       window.addEventListener('online', () => {
-         fetchData(); // Your existing fetchData function
-       });
-     </script>
+    <script>
+        // Tampilkan modal secara otomatis ketika halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tunggu sebentar sebelum menampilkan modal
+            setTimeout(function() {
+                document.getElementById('installModal').classList.remove('hidden');
+            }, 1000);
+        });
+        
+        // Tombol Batal untuk menutup modal
+        document.getElementById('cancelBtn').addEventListener('click', function() {
+            document.getElementById('installModal').classList.add('hidden');
+        });
+        
+        // Tombol Instal
+        document.getElementById('installBtn').addEventListener('click', function() {
+            alert('Memulai proses instalasi aplikasi...');
+            document.getElementById('installModal').classList.add('hidden');
+            
+            // Di sini Anda dapat menambahkan kode untuk menangani proses instalasi PWA
+            // jika aplikasi Anda adalah Progressive Web App
+        });
+        
+        // Jika ingin mengintegrasikan dengan Service Worker dari kode yang Anda berikan
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/flowsense/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+        
+        // Check for updates when coming back online
+        window.addEventListener('online', () => {
+            console.log('Kembali online, memeriksa pembaruan');
+            // fetchData(); // Uncomment jika Anda memiliki fungsi fetchData
+        });
+        
+        // Untuk PWA, Anda bisa mendeteksi apakah aplikasi dapat diinstal
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            // Simpan event untuk digunakan nanti
+            let deferredPrompt = e;
+            
+            // Tambahkan event listener ke tombol instal
+            document.getElementById('installBtn').addEventListener('click', () => {
+                // Tampilkan prompt instalasi
+                deferredPrompt.prompt();
+                
+                // Tunggu pengguna merespons prompt
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Pengguna menerima prompt instalasi');
+                    } else {
+                        console.log('Pengguna menolak prompt instalasi');
+                    }
+                    // Clear the saved prompt
+                    deferredPrompt = null;
+                });
+            });
+        });
+    </script>
 <script>
     const modalOverlay = document.getElementById('modalOverlay');
 const infoModal = document.getElementById('infoModal');
