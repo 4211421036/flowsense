@@ -900,24 +900,6 @@
             </div>
         </section>
 
-        <!-- Reynolds Number -->
-        <section class="card" aria-labelledby="reynolds-title" aria-describedby="reynolds-desc">
-            <h2 class="card-title" id="reynolds-title">Reynolds Number</h2>
-            <div id="reynolds-desc" class="visually-hidden">Dimensionless number indicating flow characteristics</div>
-            <div class="card-value">
-                <span id="reynoldsValue" aria-live="polite" aria-atomic="true">0</span>
-            </div>
-            <div class="chart-container">
-                <canvas id="reynoldsChart" aria-label="Reynolds number over time chart" role="img">
-                    <p role="text">Graph showing Reynolds number measurements over time</p>
-                </canvas>
-            </div>
-            <div class="card-status">
-                <div class="status-indicator info" id="flowTypeStatus" aria-hidden="true"></div>
-                <div class="status-text" id="flowTypeText" aria-live="polite" aria-atomic="true">Laminar Flow</div>
-            </div>
-        </section>
-
         <!-- System Status -->
         <section class="card" aria-labelledby="systemStatus-title" aria-describedby="systemStatus-desc">
             <h2 class="card-title" id="systemStatus-title">System Status</h2>
@@ -1089,7 +1071,6 @@
              pressure2Chart = createLineChart('pressure2Chart', colors.green);
              diffPressureChart = createLineChart('diffPressureChart', colors.yellow);
              flowRateChart = createLineChart('flowRateChart', colors.orange);
-             reynoldsChart = createLineChart('reynoldsChart', colors.purple);
  
              // Comparison chart
              pressureCompChart = new Chart(document.getElementById('pressureCompChart'), {
@@ -1251,14 +1232,12 @@
          let sampleHistoryPressure2 = [80.2, 80.5, 80.1, 79.8, 80.0, 80.4, 80.6, 80.3, 80.1, 79.9];
          let sampleHistoryDiff = sampleHistoryPressure1.map((p1, i) => p1 - sampleHistoryPressure2[i]);
          let sampleHistoryFlow = sampleHistoryDiff.map(diff => Math.sqrt(diff) * 0.8);
-         let sampleHistoryReynolds = sampleHistoryFlow.map(flow => flow * 1000);
  
          let dataHistory = {
              pressure1: sampleHistoryPressure1,
              pressure2: sampleHistoryPressure2,
              diffPressure: sampleHistoryDiff,
              flowRate: sampleHistoryFlow,
-             reynolds: sampleHistoryReynolds
          };
  
          // Current values
@@ -1267,7 +1246,6 @@
              pressure2: 79.9,
              diffPressure: 21.3,
              flowRate: 3.68,
-             reynolds: 3680,
              efficiency: 85,
              uptime: 120,
              sampleCount: 350
@@ -1288,7 +1266,6 @@
              document.getElementById('pressure2Value').textContent = currentData.pressure2.toFixed(2);
              document.getElementById('diffPressureValue').textContent = currentData.diffPressure.toFixed(2);
              document.getElementById('flowRateValue').textContent = currentData.flowRate.toFixed(2);
-             document.getElementById('reynoldsValue').textContent = Math.round(currentData.reynolds);
  
              // Update comparison values
              document.getElementById('compPressure1').textContent = currentData.pressure1.toFixed(2);
@@ -1298,19 +1275,6 @@
              // Update gauge values
              document.getElementById('gaugeFlowValue').textContent = currentData.flowRate.toFixed(2);
              document.getElementById('efficiencyValue').textContent = currentData.efficiency;
- 
-             // Update flow type text based on Reynolds number
-             const flowTypeElement = document.getElementById('flowTypeText');
-             if (currentData.reynolds < 2000) {
-                 flowTypeElement.textContent = "Laminar Flow";
-                 document.getElementById('flowTypeStatus').className = "status-indicator normal";
-             } else if (currentData.reynolds < 4000) {
-                 flowTypeElement.textContent = "Transitional Flow";
-                 document.getElementById('flowTypeStatus').className = "status-indicator warning";
-             } else {
-                 flowTypeElement.textContent = "Turbulent Flow";
-                 document.getElementById('flowTypeStatus').className = "status-indicator info";
-             }
  
              // Update system status
              document.getElementById('uptime').textContent = currentData.uptime;
@@ -1336,7 +1300,6 @@
              updateChart(pressure2Chart, dataHistory.pressure2);
              updateChart(diffPressureChart, dataHistory.diffPressure);
              updateChart(flowRateChart, dataHistory.flowRate);
-             updateChart(reynoldsChart, dataHistory.reynolds);
  
              updateCompChart(pressureCompChart, dataHistory.pressure1, dataHistory.pressure2);
  
@@ -1395,7 +1358,6 @@
                  pressure2: parseFloat(latestData.pressure2),
                  diffPressure: parseFloat(latestData.pressureDiff),
                  flowRate: parseFloat(latestData.flowRate),
-                 reynolds: calculateReynolds(parseFloat(latestData.flowRate)),
                  efficiency: calculateEfficiency(parseFloat(latestData.pressure1), parseFloat(latestData.pressure2)),
                  uptime: data.uptime || 0,
                  sampleCount: data.readings.length
@@ -1409,8 +1371,7 @@
                  pressure1: historyData.map(item => parseFloat(item.pressure1)),
                  pressure2: historyData.map(item => parseFloat(item.pressure2)),
                  diffPressure: historyData.map(item => parseFloat(item.pressureDiff)),
-                 flowRate: historyData.map(item => parseFloat(item.flowRate)),
-                 reynolds: historyData.map(item => calculateReynolds(parseFloat(item.flowRate)))
+                 flowRate: historyData.map(item => parseFloat(item.flowRate))
              };
  
              // Update configuration if available
@@ -1424,24 +1385,6 @@
              // Update UI
              updateDisplayedValues();
              updateAllCharts();
-         }
- 
-         // Calculate Reynolds number based on flow rate
-         function calculateReynolds(flowRate) {
-             // Constants for water at room temperature
-             const density = 998; // kg/m³
-             const viscosity = 0.001; // Pa·s
-             const diameter = config.throatDiameter / 1000; // Convert mm to m
- 
-             // Convert flow rate from L/min to m³/s
-             const flowRateM3S = flowRate / (60 * 1000);
- 
-             // Calculate velocity in throat
-             const area = Math.PI * (diameter/2) ** 2;
-             const velocity = flowRateM3S / area;
- 
-             // Calculate Reynolds number
-             return (density * velocity * diameter) / viscosity;
          }
  
          // Calculate venturi efficiency based on pressure recovery
@@ -1649,20 +1592,6 @@ let isMobile = window.innerWidth <= 768; // Mobile detection
                 </ul>
                 <p role="text"><strong>Normal Range:</strong> Typically 75-95% for well-designed Venturi meters</p>
             `
-        },
-        reynolds: {
-            title: "Reynolds Number Information",
-            content: `
-                <p role="text">This chart shows the Reynolds number, indicating flow regime.</p>
-                <p role="text"><strong>How to read:</strong></p>
-                <ul>
-                    <li>Below 2000: Laminar flow (smooth)</li>
-                    <li>2000-4000: Transitional flow</li>
-                    <li>Above 4000: Turbulent flow</li>
-                    <li>Venturi meters work best in turbulent flow</li>
-                </ul>
-                <p role="text"><strong>Note:</strong> Calculated using throat diameter and current flow rate.</p>
-            `
         }
     };
     
@@ -1684,7 +1613,6 @@ document.querySelectorAll('.card').forEach(card => {
     else if (cardTitle.includes('Comparison')) chartType = 'pressureComp';
     else if (cardTitle.includes('Gauge')) chartType = 'flowGauge';
     else if (cardTitle.includes('Efficiency')) chartType = 'efficiency';
-    else if (cardTitle.includes('Reynolds')) chartType = 'reynolds';
     
     if (chartType) {
         const infoButton = document.createElement('button');
