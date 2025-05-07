@@ -1,4 +1,4 @@
-// Auto-generated Service Worker - 2025-05-07T06:05:45.260Z
+// Auto-generated Service Worker - 2025-05-07T06:10:49.439Z
 const CACHE_NAME = 'venturi-meter-v1';
 const urlsToCache = [
   "/192x192.png",
@@ -7,6 +7,7 @@ const urlsToCache = [
   "/48x48.png",
   "/512x512.png",
   "/512x512f.png",
+  "/BingSiteAuth.xml",
   "/GraphVen.png",
   "/af.wav",
   "/auto/auto.js",
