@@ -1443,10 +1443,24 @@
     <script>
     let deferredPrompt = null;
 
+    function isInStandaloneMode() {
+        return window.matchMedia('(display-mode: standalone)').matches ||
+               window.navigator.standalone === true;
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        // Jangan tampilkan modal jika aplikasi sudah terinstal
+        if (isInStandaloneMode()) {
+            console.log('Aplikasi sudah terinstal. Modal tidak ditampilkan.');
+            return;
+        }
+
+        // Tunda penampilan modal sampai install prompt tersedia
         setTimeout(function () {
-            document.getElementById('installModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+            if (deferredPrompt) {
+                document.getElementById('installModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
         }, 1000);
     });
 
@@ -1456,7 +1470,6 @@
     });
 
     document.getElementById('installBtn').addEventListener('click', function () {
-        // Suara notifikasi
         const sound = document.getElementById('notifySound');
         if (sound) sound.play();
 
@@ -1471,17 +1484,18 @@
         const interval = setInterval(() => {
             countdown--;
             toast.textContent = `Memulai proses instalasi aplikasi... (${countdown})`;
+
             if (countdown === 0) {
                 clearInterval(interval);
 
-                // Sembunyikan toast dengan animasi
+                // Sembunyikan toast
                 toast.classList.remove('show');
                 toast.classList.add('hide');
                 setTimeout(() => {
                     toast.classList.add('hidden');
                 }, 500);
 
-                // Tampilkan prompt instalasi jika tersedia
+                // Tampilkan prompt instalasi
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
                     deferredPrompt.userChoice.then((choiceResult) => {
@@ -1505,25 +1519,21 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/flowsense/sw.js')
-                .then(registration => {
-                    console.log('ServiceWorker registration successful');
-                })
-                .catch(err => {
-                    console.log('ServiceWorker registration failed: ', err);
-                });
+                .then(reg => console.log('ServiceWorker berhasil:', reg))
+                .catch(err => console.log('ServiceWorker gagal:', err));
         });
     }
 
     // Online checker
     window.addEventListener('online', () => {
         console.log('Kembali online, memeriksa pembaruan');
-        // fetchData(); // Uncomment jika Anda memiliki fungsi fetchData
     });
 
-    // Before install prompt handler
+    // Simpan event sebelum install
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
+        console.log('beforeinstallprompt ditangkap');
     });
 </script>
 
