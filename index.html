@@ -769,6 +769,14 @@
             pointer-events: none;
             backdrop-filter: blur(10px);
         }
+        #brunoGif {
+            position: absolute;
+            width: 100px;
+            height: auto;
+            z-index: 999;
+            transition: opacity 0.3s ease;
+        }
+
      </style>
  </head>
  <body>
@@ -792,6 +800,7 @@
 
 <main id="main-content" role="main" tabindex="-1">
     <!-- Removed incorrect role="menuitem" -->
+    <img src="brunoPeekingBottom-cropped.gif" id="brunoGif" style="display:none;" />
     <div class="dashboard" aria-label="Dashboard panels">
         <!-- Pressure 1 Card -->
         <section class="card" aria-labelledby="pressure1-title" aria-describedby="pressure1-desc">
@@ -813,7 +822,7 @@
         </section>
 
         <!-- Pressure 2 Card -->
-        <section class="card" aria-labelledby="pressure2-title" aria-describedby="pressure2-desc">
+        <section class="card" id="pressure2" aria-labelledby="pressure2-title" aria-describedby="pressure2-desc">
             <h2 class="card-title" id="pressure2-title">Pressure 2</h2>
             <div id="pressure2-desc" class="visually-hidden">Pressure reading from sensor 2</div>
             <div class="card-value">
@@ -832,7 +841,7 @@
         </section>
 
         <!-- Differential Pressure Card -->
-        <section class="card" aria-labelledby="diffPressure-title" aria-describedby="diffPressure-desc">
+        <section class="card" id="differential" aria-labelledby="diffPressure-title" aria-describedby="diffPressure-desc">
             <h2 class="card-title" id="diffPressure-title">Differential Pressure</h2>
             <div id="diffPressure-desc" class="visually-hidden">Difference between pressure 1 and pressure 2</div>
             <div class="card-value">
@@ -851,7 +860,7 @@
         </section>
 
         <!-- Flow Rate Card -->
-        <section class="card" aria-labelledby="flowRate-title" aria-describedby="flowRate-desc">
+        <section class="card" id="flowrate" aria-labelledby="flowRate-title" aria-describedby="flowRate-desc">
             <h2 class="card-title" id="flowRate-title">Flow Rate</h2>
             <div id="flowRate-desc" class="visually-hidden">Calculated flow rate through the venturi meter</div>
             <div class="card-value">
@@ -1029,6 +1038,51 @@
 <footer role="contentinfo" class="footer-info">
     <p role="text">Venturi Meter Monitoring System | Last Updated: <span id="footerLastUpdate" aria-live="polite" aria-atomic="true">12:09 PM</span></p>
 </footer>
+  <script>
+function getRandomCardId() {
+  const ids = ["pressure2", "differential", "flowrate"];
+  return ids[Math.floor(Math.random() * ids.length)];
+}
+
+function shouldShowBruno() {
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const brunoData = JSON.parse(localStorage.getItem("brunoShowLog") || "[]");
+
+  // Filter log hanya untuk hari ini
+  const todayLogs = brunoData.filter(entry => entry.date === today);
+
+  // Jika sudah muncul 2x hari ini, jangan tampilkan lagi
+  if (todayLogs.length >= 2) return false;
+
+  // Tambah entri baru (untuk kunjungan ini)
+  brunoData.push({ date: today, timestamp: Date.now() });
+  localStorage.setItem("brunoShowLog", JSON.stringify(brunoData));
+  return true;
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  if (shouldShowBruno()) {
+    const randomId = getRandomCardId();
+    const card = document.getElementById(randomId);
+    const bruno = document.getElementById("brunoGif");
+
+    if (card && bruno) {
+      const rect = card.getBoundingClientRect();
+
+      // Tampilkan di atas card (adjust sesuai ukuran)
+      bruno.style.left = `${rect.left + window.scrollX + rect.width / 2 - 50}px`;
+      bruno.style.top = `${rect.top + window.scrollY - 80}px`;
+      bruno.style.display = "block";
+
+      // Sembunyikan setelah 8 detik
+      setTimeout(() => {
+        bruno.style.opacity = "0";
+        setTimeout(() => bruno.remove(), 500);
+      }, 8000);
+    }
+  }
+});
+</script>
  
      <script>
          // Initialize charts with empty data
