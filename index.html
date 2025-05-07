@@ -1447,6 +1447,18 @@
     const installBtn = document.getElementById('installBtn');
     const toast = document.getElementById('toast');
 
+    // Cek jika URL mengandung parameter ?pwa
+    function isPWAUrl() {
+        return window.location.search.includes('pwa');
+    }
+
+    // Fungsi untuk menghapus modal dari DOM
+    function removeInstallModal() {
+        if (installModal && installModal.parentNode) {
+            installModal.parentNode.removeChild(installModal);
+        }
+    }
+
     // Fungsi untuk mengecek apakah app sudah diinstal
     function isAppInstalled() {
         return window.matchMedia('(display-mode: standalone)').matches || 
@@ -1455,82 +1467,102 @@
 
     // Fungsi untuk menampilkan modal instalasi
     function showInstallModal() {
-        if (!isAppInstalled()) {
+        if (!isAppInstalled() && !isPWAUrl()) {
             setTimeout(() => {
-                installModal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
+                if (installModal) {
+                    installModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
             }, 1000);
+        } else if (isPWAUrl()) {
+            removeInstallModal();
         }
     }
 
     // Fungsi untuk menyembunyikan modal instalasi
     function hideInstallModal() {
-        installModal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
+        if (installModal) {
+            installModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
     }
 
     // Fungsi untuk menampilkan toast notifikasi
     function showToast(message, duration = 3000) {
-        toast.textContent = message;
-        toast.classList.remove('hidden', 'hide');
-        toast.classList.add('show');
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-            toast.classList.add('hide');
-            setTimeout(() => toast.classList.add('hidden'), 500);
-        }, duration);
+        if (toast) {
+            toast.textContent = message;
+            toast.classList.remove('hidden', 'hide');
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.classList.add('hide');
+                setTimeout(() => toast.classList.add('hidden'), 500);
+            }, duration);
+        }
     }
 
     // Event ketika DOM siap
     document.addEventListener('DOMContentLoaded', function() {
-        showInstallModal();
+        if (isPWAUrl()) {
+            removeInstallModal();
+        } else {
+            showInstallModal();
+        }
     });
 
     // Event listener untuk tombol batal
-    cancelBtn.addEventListener('click', hideInstallModal);
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', hideInstallModal);
+    }
 
     // Event listener untuk tombol instal
-    installBtn.addEventListener('click', function() {
-        // Mainkan suara notifikasi jika ada
-        const sound = document.getElementById('notifySound');
-        if (sound) sound.play();
+    if (installBtn) {
+        installBtn.addEventListener('click', function() {
+            // Mainkan suara notifikasi jika ada
+            const sound = document.getElementById('notifySound');
+            if (sound) sound.play();
 
-        // Tampilkan countdown toast
-        let countdown = 3;
-        showToast(`Memulai proses instalasi aplikasi... (${countdown})`, 4000);
+            // Tampilkan countdown toast
+            let countdown = 3;
+            showToast(`Memulai proses instalasi aplikasi... (${countdown})`, 4000);
 
-        const interval = setInterval(() => {
-            countdown--;
-            toast.textContent = `Memulai proses instalasi aplikasi... (${countdown})`;
-            if (countdown === 0) {
-                clearInterval(interval);
-                
-                // Sembunyikan toast dengan animasi
-                toast.classList.remove('show');
-                toast.classList.add('hide');
-                setTimeout(() => toast.classList.add('hidden'), 500);
-
-                // Tampilkan prompt instalasi jika tersedia
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('Pengguna menerima prompt instalasi');
-                            localStorage.setItem('appInstalled', 'true');
-                            showToast('Aplikasi berhasil diinstal!');
-                        } else {
-                            console.log('Pengguna menolak prompt instalasi');
-                        }
-                        deferredPrompt = null;
-                    });
+            const interval = setInterval(() => {
+                countdown--;
+                if (toast) {
+                    toast.textContent = `Memulai proses instalasi aplikasi... (${countdown})`;
                 }
-            }
-        }, 1000);
+                if (countdown === 0) {
+                    clearInterval(interval);
+                    
+                    // Sembunyikan toast dengan animasi
+                    if (toast) {
+                        toast.classList.remove('show');
+                        toast.classList.add('hide');
+                        setTimeout(() => toast.classList.add('hidden'), 500);
+                    }
 
-        // Tutup modal
-        hideInstallModal();
-    });
+                    // Tampilkan prompt instalasi jika tersedia
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        deferredPrompt.userChoice.then((choiceResult) => {
+                            if (choiceResult.outcome === 'accepted') {
+                                console.log('Pengguna menerima prompt instalasi');
+                                localStorage.setItem('appInstalled', 'true');
+                                showToast('Aplikasi berhasil diinstal!');
+                            } else {
+                                console.log('Pengguna menolak prompt instalasi');
+                            }
+                            deferredPrompt = null;
+                        });
+                    }
+                }
+            }, 1000);
+
+            // Tutup modal
+            hideInstallModal();
+        });
+    }
 
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
@@ -1545,18 +1577,13 @@
         });
     }
 
-    // Event listener untuk perubahan status koneksi
-    window.addEventListener('online', () => {
-        console.log('Kembali online, memeriksa pembaruan');
-    });
-
     // Tangkap event beforeinstallprompt
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         
-        // Jika belum diinstal, tampilkan modal (opsional)
-        if (!isAppInstalled()) {
+        // Jika belum diinstal dan bukan URL PWA, tampilkan modal
+        if (!isAppInstalled() && !isPWAUrl()) {
             showInstallModal();
         }
     });
