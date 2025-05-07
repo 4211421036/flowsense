@@ -1,7 +1,7 @@
 {
   "name": "Venturi Meter Monitoring",
   "short_name": "VenturiMeter",
-  "start_url": "/flowsense/",
+  "start_url": "/flowsense?pwa",
   "display": "standalone",
   "categories": ["IoT", "Embedded Systems"],
   "background_color": "#151C35",
