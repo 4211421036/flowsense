@@ -1442,65 +1442,83 @@
      </script>
     <script>
     let deferredPrompt = null;
+    const installModal = document.getElementById('installModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const installBtn = document.getElementById('installBtn');
+    const toast = document.getElementById('toast');
 
-    function isInStandaloneMode() {
-        return window.matchMedia('(display-mode: standalone)').matches ||
-               window.navigator.standalone === true;
+    // Fungsi untuk mengecek apakah app sudah diinstal
+    function isAppInstalled() {
+        return window.matchMedia('(display-mode: standalone)').matches || 
+               localStorage.getItem('appInstalled') === 'true';
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // Jangan tampilkan modal jika aplikasi sudah terinstal
-        if (isInStandaloneMode()) {
-            console.log('Aplikasi sudah terinstal. Modal tidak ditampilkan.');
-            return;
-        }
-
-        // Tunda penampilan modal sampai install prompt tersedia
-        setTimeout(function () {
-            if (deferredPrompt) {
-                document.getElementById('installModal').classList.remove('hidden');
+    // Fungsi untuk menampilkan modal instalasi
+    function showInstallModal() {
+        if (!isAppInstalled()) {
+            setTimeout(() => {
+                installModal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
-            }
-        }, 1000);
-    });
+            }, 1000);
+        }
+    }
 
-    document.getElementById('cancelBtn').addEventListener('click', function () {
-        document.getElementById('installModal').classList.add('hidden');
+    // Fungsi untuk menyembunyikan modal instalasi
+    function hideInstallModal() {
+        installModal.classList.add('hidden');
         document.body.style.overflow = 'auto';
+    }
+
+    // Fungsi untuk menampilkan toast notifikasi
+    function showToast(message, duration = 3000) {
+        toast.textContent = message;
+        toast.classList.remove('hidden', 'hide');
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+            setTimeout(() => toast.classList.add('hidden'), 500);
+        }, duration);
+    }
+
+    // Event ketika DOM siap
+    document.addEventListener('DOMContentLoaded', function() {
+        showInstallModal();
     });
 
-    document.getElementById('installBtn').addEventListener('click', function () {
+    // Event listener untuk tombol batal
+    cancelBtn.addEventListener('click', hideInstallModal);
+
+    // Event listener untuk tombol instal
+    installBtn.addEventListener('click', function() {
+        // Mainkan suara notifikasi jika ada
         const sound = document.getElementById('notifySound');
         if (sound) sound.play();
 
-        const toast = document.getElementById('toast');
-        toast.classList.remove('hidden');
-        toast.classList.add('show');
-        toast.classList.remove('hide');
-
+        // Tampilkan countdown toast
         let countdown = 3;
-        toast.textContent = `Memulai proses instalasi aplikasi... (${countdown})`;
+        showToast(`Memulai proses instalasi aplikasi... (${countdown})`, 4000);
 
         const interval = setInterval(() => {
             countdown--;
             toast.textContent = `Memulai proses instalasi aplikasi... (${countdown})`;
-
             if (countdown === 0) {
                 clearInterval(interval);
-
-                // Sembunyikan toast
+                
+                // Sembunyikan toast dengan animasi
                 toast.classList.remove('show');
                 toast.classList.add('hide');
-                setTimeout(() => {
-                    toast.classList.add('hidden');
-                }, 500);
+                setTimeout(() => toast.classList.add('hidden'), 500);
 
-                // Tampilkan prompt instalasi
+                // Tampilkan prompt instalasi jika tersedia
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
                     deferredPrompt.userChoice.then((choiceResult) => {
                         if (choiceResult.outcome === 'accepted') {
                             console.log('Pengguna menerima prompt instalasi');
+                            localStorage.setItem('appInstalled', 'true');
+                            showToast('Aplikasi berhasil diinstal!');
                         } else {
                             console.log('Pengguna menolak prompt instalasi');
                         }
@@ -1511,29 +1529,42 @@
         }, 1000);
 
         // Tutup modal
-        document.getElementById('installModal').classList.add('hidden');
-        document.body.style.overflow = 'auto';
+        hideInstallModal();
     });
 
-    // Service Worker
+    // Service Worker Registration
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/flowsense/sw.js')
-                .then(reg => console.log('ServiceWorker berhasil:', reg))
-                .catch(err => console.log('ServiceWorker gagal:', err));
+                .then(registration => {
+                    console.log('ServiceWorker registration successful');
+                })
+                .catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
         });
     }
 
-    // Online checker
+    // Event listener untuk perubahan status koneksi
     window.addEventListener('online', () => {
         console.log('Kembali online, memeriksa pembaruan');
     });
 
-    // Simpan event sebelum install
+    // Tangkap event beforeinstallprompt
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        console.log('beforeinstallprompt ditangkap');
+        
+        // Jika belum diinstal, tampilkan modal (opsional)
+        if (!isAppInstalled()) {
+            showInstallModal();
+        }
+    });
+
+    // Deteksi ketika app dijalankan dalam mode standalone
+    window.addEventListener('appinstalled', () => {
+        console.log('Aplikasi berhasil diinstal');
+        localStorage.setItem('appInstalled', 'true');
     });
 </script>
 
