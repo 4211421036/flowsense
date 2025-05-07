@@ -754,20 +754,6 @@
             pointer-events: none;
             backdrop-filter: blur(10px);
         }
-         .toast::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 4px;
-            background-color: rgb(101, 216, 228);
-            width: 100%;
-            animation: toastProgress 3s linear forwards;
-        }
-        @keyframes toastProgress {
-            from { width: 100%; }
-            to { width: 0%; }
-        }
      </style>
  </head>
  <body>
