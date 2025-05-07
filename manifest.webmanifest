@@ -9,7 +9,7 @@
   "description": "Venturi Meter Monitoring System with offline capabilities",
   "icons": [
     {
-      "src": "48x48f.png",
+      "src": "48x48.png",
       "sizes": "48x48",
       "type": "image/png"
     },
