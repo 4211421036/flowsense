@@ -1,1 +1,1 @@
-{"config":{"venturiType":"DOUBLE_PIPE","mainDiameter":58,"throatDiameter":28},"uptime":0,"readings":[{"timestamp":2,"pressure1":0,"pressure2":15625,"pressureDiff":-15625,"flowRate":0}]}
+{"config":{"venturiType":"DOUBLE_PIPE","mainDiameter":58,"throatDiameter":28},"uptime":0,"readings":[{"timestamp":2,"pressure1":0,"pressure2":15625,"pressureDiff":-15625,"flowRate":0},{"timestamp":9,"pressure1":0,"pressure2":15625,"pressureDiff":-15625,"flowRate":0}]}
