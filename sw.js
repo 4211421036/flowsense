@@ -1,4 +1,4 @@
-// Auto-generated Service Worker - 2025-05-22T04:06:06.047Z
+// Auto-generated Service Worker - 2025-05-31T07:51:52.159Z
 const CACHE_NAME = 'venturi-meter-v1';
 const urlsToCache = [
   "/192x192.png",
@@ -10,6 +10,7 @@ const urlsToCache = [
   "/Arduino/p",
   "/BingSiteAuth.xml",
   "/GraphVen.png",
+  "/LAI.py",
   "/MPS20N0040D.cpp",
   "/MPS20N0040D.h",
   "/af.wav",
